@@ -18,21 +18,52 @@
 			"class ${1:classname}(models.Model):",
 			"\tclass Meta:",
 			"\t\tdb_table = '$2'"
-			
 		],
 		"description": "Generate Django Model Class template"
 	},
 	"Generate Django TemplateView Class": {
 		"prefix": "template",
 		"body": [
-		  "class ${1:MyTemplateView}(TemplateView):",
-		  "    ",
-		  "    template_name = '$2'",
-		  "",
-		  "    def get_context_data(self, *args, **kwargs):",
-		  "        context = super().get_context_data(*args, **kwargs)",
-		  "        return context"
+			"class ${1:MyTemplateView}(TemplateView):",
+			"    ",
+			"    template_name = '$2'",
+			"",
+			"    def get_context_data(self, *args, **kwargs):",
+			"        context = super().get_context_data(*args, **kwargs)",
+			"        return context"
 		],
 		"description": "Generate Django TemplateView Class"
+	},
+	"Create Test Class Tempalate": {
+		"prefix": "testclass",
+		"body": [
+			"from django.test import TestCase, Client",
+			"",
+			"class TestViews(TestCase):",
+			"",
+			"    def setUp(self):",
+			"        self.client = Client()"
+		],
+		"description": "Create Test Class Tempalate"
+	},
+	"assert response status is OK": {
+		"prefix": "assertOk",
+		"body": [
+			"self.assertEquals(response.status_code, HTTPStatus.OK.value)"
+		],
+		"description": "assert response status is OK"
+	},
+	"Create ClassView based on View Generic Class": {
+		"prefix": "viewclass",
+		"body": [
+		  "class ${1:Name}View(View):",
+		  "    def get(self, request):",
+		  "        pass",
+		  "",
+		  "    def post(self, request):",
+		  "        pass",
+		  ""
+		],
+		"description": "Create ClassView based on View Generic Class"
 	  }
 }
