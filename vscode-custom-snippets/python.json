@@ -56,14 +56,22 @@
 	"Create ClassView based on View Generic Class": {
 		"prefix": "viewclass",
 		"body": [
-		  "class ${1:Name}View(View):",
-		  "    def get(self, request):",
-		  "        pass",
-		  "",
-		  "    def post(self, request):",
-		  "        pass",
-		  ""
+			"class ${1:Name}View(View):",
+			"    def get(self, request):",
+			"        pass",
+			"",
+			"    def post(self, request):",
+			"        pass",
+			""
 		],
 		"description": "Create ClassView based on View Generic Class"
-	  }
+	},
+	"Django modal timestamps fields": {
+		"prefix": "timestamps",
+		"body": [
+			"created_at = models.DateField(auto_now_add=True)",
+			"updated_at = models.DateField(auto_now_add=True)"
+		],
+		"description": "Django modal timestamps fields"
+	}
 }
