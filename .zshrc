@@ -78,8 +78,8 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-        git
-        zsh-autosuggestions
+    git
+    zsh-autosuggestions
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -109,12 +109,13 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# Alias
 
-# Aliases
 alias pms="python manage.py runserver"
 alias pm="python manage.py"
 alias pmcsu="python manage.py createsuperuser --email admin@admin.com"
@@ -122,26 +123,6 @@ alias pmcsu="python manage.py createsuperuser --email admin@admin.com"
 alias vactivate="source venv/bin/activate"
 alias lampp-start="sudo /opt/lampp/lampp start"
 
-
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-export ANDROID_SDK_ROOT="/home/ropali/Android/Sdk/"
-
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/home/ropali/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/home/ropali/anaconda3/etc/profile.d/conda.sh" ]; then
-        . "/home/ropali/anaconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/home/ropali/anaconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-
+# alias ls command to https://github.com/Yash-Handa/logo-ls
+alias ll="logo-ls -1"
+alias ls="logo-ls"
