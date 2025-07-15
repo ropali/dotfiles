@@ -22,7 +22,7 @@ return {
           if vim.fn.has("win32") == 1 then
             require("dap-python").setup(LazyVim.get_pkg_path("debugpy", "./venv/Scripts/pythonw.exe"))
           else
-            require("dap-python").setup(LazyVim.get_pkg_path("debugpy", "./venv/bin/python"))
+            require("dap-python").setup(LazyVim.get_pkg_path("debugpy", "/venv/bin/python"))
           end
         end,
       },

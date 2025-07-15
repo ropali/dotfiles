@@ -24,3 +24,7 @@ vim.keymap.set("n", "<leader>ta", function()
   require("neotest").run.run("tests")
   require("neotest").summary.open()
 end, { desc = "Run all tests" })
+
+vim.keymap.set({ "n", "v" }, "<leader>fm", function()
+  require("conform").format({ async = true, lsp_fallback = true })
+end, { desc = "Format file or range (in visual mode)" })
