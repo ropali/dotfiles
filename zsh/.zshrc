@@ -16,5 +16,18 @@ export NVM_DIR="$HOME/.nvm"
 alias sz="source ~/.zshrc"
 
 
+export PATH="$HOME/development/flutter/bin:$PATH"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/ropali/.lmstudio/bin"
+# End of LM Studio CLI section
+
+
+. "$HOME/.local/bin/env"
+
+export PATH=${PATH}:`go env GOPATH`/bin
+
 eval "$(starship init zsh)"
+
+
 
