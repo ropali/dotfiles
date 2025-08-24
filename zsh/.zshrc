@@ -24,11 +24,12 @@ export PATH="$PATH:/home/ropali/.lmstudio/bin"
 
 
 . "$HOME/.local/bin/env"
+. "$HOME/.cargo/env"
 
 export PATH=${PATH}:`go env GOPATH`/bin
 
-alias sv=".venv/bin/activate"
-alias sz="~/.zshrc"
+alias sv="source .venv/bin/activate"
+alias sz="source ~/.zshrc"
 
 eval "$(starship init zsh)"
 
