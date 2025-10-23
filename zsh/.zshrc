@@ -15,8 +15,10 @@ export NVM_DIR="$HOME/.nvm"
 # Alias
 alias sz="source ~/.zshrc"
 
-
+# Android, Flutter setup
 export PATH="/opt/flutter/bin:$PATH"
+
+export PATH="/opt/cmdline-tools/bin:$PATH"
 
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/home/ropali/.lmstudio/bin"
