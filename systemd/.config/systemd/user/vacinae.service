@@ -1,0 +1,11 @@
+[Unit]
+Description=Vacinae Server
+
+[Service]
+ExecStart=vicinae server
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+

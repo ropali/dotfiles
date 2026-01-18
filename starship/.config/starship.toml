@@ -72,6 +72,7 @@ crust = "#11111b"
 disabled = false
 style = "bg:surface0 fg:text"
 
+
 [os.symbols]
 Windows = "󰍲"
 Ubuntu = "󰕈"
@@ -92,6 +93,7 @@ CentOS = ""
 Debian = "󰣚"
 Redhat = "󱄛"
 RedHatEnterprise = "󱄛"
+Nobara = ""
 
 [username]
 show_always = true
