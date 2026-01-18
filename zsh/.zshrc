@@ -5,7 +5,6 @@ SAVEHIST=1000
 # End of lines configured by zsh-newuser-install
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 export NVM_DIR="$HOME/.nvm"
   [ -s "/home/linuxbrew/.linuxbrew/opt/nvm/nvm.sh" ] && \. "/home/linuxbrew/.linuxbrew/opt/nvm/nvm.sh"  # This loads nvm
@@ -24,8 +23,6 @@ export PATH="/opt/cmdline-tools/bin:$PATH"
 export PATH="$PATH:/home/ropali/.lmstudio/bin"
 # End of LM Studio CLI section
 
-
-. "$HOME/.local/bin/env"
 . "$HOME/.cargo/env"
 
 export PATH=${PATH}:`go env GOPATH`/bin
@@ -37,5 +34,4 @@ source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 eval "$(starship init zsh)"
 
-
-
+export PATH="/home/ropali/flutter/bin:$PATH"
