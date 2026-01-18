@@ -33,6 +33,8 @@ export PATH=${PATH}:`go env GOPATH`/bin
 alias sv="source .venv/bin/activate"
 alias sz="source ~/.zshrc"
 
+source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+
 eval "$(starship init zsh)"
 
 
