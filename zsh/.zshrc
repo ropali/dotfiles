@@ -35,3 +35,7 @@ source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 eval "$(starship init zsh)"
 
 export PATH="/home/ropali/flutter/bin:$PATH"
+
+export ANDROID_SDK_ROOT="$HOME/.android_sdk"
+export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+export PATH="$ANDROID_SDK_ROOT/emulator:$PATH"
