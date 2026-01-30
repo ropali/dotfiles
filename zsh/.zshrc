@@ -36,6 +36,14 @@ eval "$(starship init zsh)"
 
 export PATH="/home/ropali/flutter/bin:$PATH"
 
-export ANDROID_SDK_ROOT="$HOME/.android_sdk"
-export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
-export PATH="$ANDROID_SDK_ROOT/emulator:$PATH"
+# Android SDK
+export ANDROID_HOME=$HOME/Android/Sdk
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+export PATH=$PATH:$ANDROID_HOME/build-tools/36.1.0/
+
+export PATH="$HOME/.npm-global/bin:$PATH"
+
+# opencode
+export PATH=/home/ropali/.opencode/bin:$PATH

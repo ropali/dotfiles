@@ -1,0 +1,21 @@
+[Unit]
+Description=Clawdbot Gateway (v2026.1.24-3)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart="/usr/bin/node" "/home/ropali/.npm-global/lib/node_modules/clawdbot/dist/entry.js" gateway --port 18789
+Restart=always
+RestartSec=5
+KillMode=process
+Environment=HOME=/home/ropali
+Environment="PATH=/home/ropali/.nvm/current/bin:/home/ropali/.local/bin:/home/ropali/.npm-global/bin:/home/ropali/bin:/home/ropali/.fnm/current/bin:/home/ropali/.volta/bin:/home/ropali/.asdf/shims:/home/ropali/.local/share/pnpm:/home/ropali/.bun/bin:/usr/local/bin:/usr/bin:/bin"
+Environment=CLAWDBOT_GATEWAY_PORT=18789
+Environment=CLAWDBOT_GATEWAY_TOKEN=24f64dcb01fd80feb24eee406894c91c31515d8d1151b621
+Environment="CLAWDBOT_SYSTEMD_UNIT=clawdbot-gateway.service"
+Environment=CLAWDBOT_SERVICE_MARKER=clawdbot
+Environment=CLAWDBOT_SERVICE_KIND=gateway
+Environment=CLAWDBOT_SERVICE_VERSION=2026.1.24-3
+
+[Install]
+WantedBy=default.target
