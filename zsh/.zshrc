@@ -47,3 +47,5 @@ export PATH="$HOME/.npm-global/bin:$PATH"
 
 # opencode
 export PATH=/home/ropali/.opencode/bin:$PATH
+
+source "$HOME/.local/bin/env"
