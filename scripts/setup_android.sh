@@ -63,6 +63,20 @@ fi
 echo "🏗️ Extracting Android Studio to $STUDIO_PARENT_DIR..."
 tar -xzf "$TAR_FILE" -C "$STUDIO_PARENT_DIR"
 
+echo "📝 Creating desktop entry for Android Studio..."
+mkdir -p ~/.local/share/applications
+cat > ~/.local/share/applications/android-studio.desktop <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Android Studio
+Exec=$STUDIO_PARENT_DIR/android-studio/bin/studio.sh
+Icon=$STUDIO_PARENT_DIR/android-studio/bin/studio.png
+Terminal=false
+StartupWMClass=jetbrains-studio
+Categories=Development;IDE;
+EOF
+
 # 5. Inject Environment Variables into .zshrc (Checking for duplicates)
 echo "📝 Configuring .zshrc..."
 if ! grep -q "ANDROID_HOME" "$ZSHRC"; then
