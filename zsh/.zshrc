@@ -3,7 +3,7 @@ HISTFILE=~/.histfile
 HISTSIZE=1000
 SAVEHIST=1000
 # End of lines configured by zsh-newuser-install
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 
 export NVM_DIR="$HOME/.nvm"
@@ -30,11 +30,11 @@ export PATH=${PATH}:`go env GOPATH`/bin
 alias sv="source .venv/bin/activate"
 alias sz="source ~/.zshrc"
 
-source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+source ~/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 eval "$(starship init zsh)"
 
-export PATH="/home/ropali/flutter/bin:$PATH"
+export PATH="$HOME/flutter/bin:$PATH"
 
 # Android SDK
 export ANDROID_HOME=$HOME/Android/Sdk
@@ -48,4 +48,4 @@ export PATH="$HOME/.npm-global/bin:$PATH"
 # opencode
 export PATH=/home/ropali/.opencode/bin:$PATH
 
-source "$HOME/.local/bin/env"
+# source "$HOME/.local/bin/env"
