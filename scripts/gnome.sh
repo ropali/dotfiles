@@ -125,6 +125,12 @@ run_other_setups() {
     else
         echo "setup_android.sh not found, skipping."
     fi
+
+    if [ -f "$script_dir/flutter.sh" ]; then
+        bash "$script_dir/flutter.sh"
+    else
+        echo "flutter.sh not found, skipping."
+    fi
 }
 
 # Main function to run all setups
@@ -143,5 +149,4 @@ main() {
 }
 
 # Run the main function
-# main
-install_google_antigavity
+main
