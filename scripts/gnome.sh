@@ -83,6 +83,24 @@ install_app_launcher() {
 
 }
 
+install_google_antigavity() {
+    echo "Installing Google Antigavity..."
+    sudo tee /etc/yum.repos.d/antigravity.repo << EOL
+[antigravity-rpm]
+name=Antigravity RPM Repository
+baseurl=https://us-central1-yum.pkg.dev/projects/antigravity-auto-updater-dev/antigravity-rpm
+enabled=1
+gpgcheck=0
+EOL
+
+    sudo dnf makecache
+
+
+    sudo dnf install antigravity -y
+
+    echo "Google Antigravity installed successfully!"
+}
+
 # Function to run other setup scripts in the same folder
 run_other_setups() {
     echo "Running other setup scripts..."
@@ -121,7 +139,9 @@ main() {
     install_rust
     install_app_launcher
     run_other_setups
+    install_google_antigavity
 }
 
 # Run the main function
-main
+# main
+install_google_antigavity
