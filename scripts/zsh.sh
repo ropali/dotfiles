@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Stow the config from the dotfiles repo
+cd ~/dotfiles
+stow starship
+
 # We'll store plugins in a standard location
 PLUGIN_DIR="$HOME/.zsh/plugins"
 mkdir -p "$PLUGIN_DIR"

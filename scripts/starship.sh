@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Stow the config from the dotfiles repo
+cd ~/dotfiles
+stow starship
+
 # 1. Install Zsh and Starship Binary
 echo "--- Installing Zsh and Starship ---"
 # Fedora uses dnf; we ensure zsh is installed first
