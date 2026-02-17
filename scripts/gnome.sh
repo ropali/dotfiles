@@ -61,6 +61,8 @@ clone_repos() {
   else
     git clone git@github.com:FrenzyExists/wallpapers.git
   fi
+
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 }
 
 # Function to install Rust
