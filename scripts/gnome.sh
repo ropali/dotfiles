@@ -29,6 +29,11 @@ install_homebrew_pkgs() {
   brew install lazygit
 }
 
+install_uv() {
+  echo "Installing uv package manager..."
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+}
+
 # Function to setup GitHub SSH key
 setup_ssh() {
   echo "Setting up GitHub SSH key..."
@@ -163,8 +168,8 @@ main() {
   install_app_launcher
   run_other_setups
   install_google_antigavity
+  install_uv
 }
 
 # Run the main function
 main
-
