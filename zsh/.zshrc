@@ -46,6 +46,6 @@ export PATH=$PATH:$ANDROID_HOME/build-tools/36.1.0/
 export PATH="$HOME/.npm-global/bin:$PATH"
 
 # opencode
-export PATH=/home/ropali/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"
 
 source "$HOME/.local/bin/env"
