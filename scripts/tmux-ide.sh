@@ -1,8 +1,9 @@
 #!/bin/bash
 # tmux-ide: Open IDE layout with nvim, opencode, and terminal
-# Usage: ide [directory]
+# Usage: ide [--ai <command>] [directory]
 # Example: ide .
 #          ide ~/projects/myapp
+#          ide --ai codex .
 
 INSTALL_BIN="$HOME/.local/bin"
 INSTALL_TARGET="$INSTALL_BIN/ide"
@@ -26,7 +27,33 @@ if [ "$(basename "$0")" != "ide" ]; then
 fi
 
 ide() {
-  local target_dir="${1:-.}"
+  local target_dir="."
+  local assistant_cmd="${IDE_ASSISTANT:-opencode}"
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --ai)
+        if [ -z "${2:-}" ]; then
+          echo "Error: --ai requires a command" >&2
+          return 1
+        fi
+        assistant_cmd="$2"
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+      -*)
+        echo "Error: Unknown option: $1" >&2
+        return 1
+        ;;
+      *)
+        target_dir="$1"
+        shift
+        ;;
+    esac
+  done
 
   # Resolve to absolute path
   target_dir=$(cd "$target_dir" 2>/dev/null && pwd) || {
@@ -65,7 +92,7 @@ ide() {
     sleep 0.1
     tmux send-keys -t "${window_target}.2" "cd '${dir}'" C-m
     sleep 0.1
-    tmux send-keys -t "${window_target}.3" "cd '${dir}' && opencode ." C-m
+    tmux send-keys -t "${window_target}.3" "cd '${dir}' && ${assistant_cmd} ." C-m
 
     # Select the nvim pane (top-left)
     tmux select-pane -t "${window_target}.1"
