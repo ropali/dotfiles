@@ -116,6 +116,25 @@ EOL
   echo "Google Antigravity installed successfully!"
 }
 
+install_nvm_nodejs() {
+  echo "Installing NVM..."
+  # Download and install nvm:
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+  # in lieu of restarting the shell
+  \. "$HOME/.nvm/nvm.sh"
+
+  # Download and install Node.js:
+  nvm install 24
+
+  # Verify the Node.js version:
+  node -v # Should print "v24.13.1".
+
+  # Verify npm version:
+  npm -v # Should print "11.8.0".
+
+}
+
 # Function to run other setup scripts in the same folder
 run_other_setups() {
   echo "Running other setup scripts..."

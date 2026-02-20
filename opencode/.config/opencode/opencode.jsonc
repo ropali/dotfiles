@@ -1,4 +1,32 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "theme": "gruvbox"
+  "theme": "gruvbox",
+  "plugin": ["opencode-antigravity-auth@latest"],
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": {
+        "baseURL": "http://localhost:11434/v1"
+      },
+      "models": {
+        "codestral": {
+          "name": "Codestral:latest"
+        },
+        "gpt-oss:20b": {
+          "name": "GPT-OSS 20b"
+        },
+        "qwen3:14b": {
+          "name": "Qwen3 14B"
+        },
+        "mistral:7b": {
+          "name": "Mistral 7B"
+        },
+        "qwen2.5-coder:14b": {
+          "name": "Qwen2.5 Coder 14b"
+        }
+      }
+    }
+  }
+
 }
