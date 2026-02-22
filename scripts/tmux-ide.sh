@@ -32,26 +32,26 @@ ide() {
 
   while [ $# -gt 0 ]; do
     case "$1" in
-      --ai)
-        if [ -z "${2:-}" ]; then
-          echo "Error: --ai requires a command" >&2
-          return 1
-        fi
-        assistant_cmd="$2"
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-      -*)
-        echo "Error: Unknown option: $1" >&2
+    --ai)
+      if [ -z "${2:-}" ]; then
+        echo "Error: --ai requires a command" >&2
         return 1
-        ;;
-      *)
-        target_dir="$1"
-        shift
-        ;;
+      fi
+      assistant_cmd="$2"
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "Error: Unknown option: $1" >&2
+      return 1
+      ;;
+    *)
+      target_dir="$1"
+      shift
+      ;;
     esac
   done
 
@@ -73,7 +73,7 @@ ide() {
 
     # First split: create right pane (30% width)
     # This creates Pane 1 (Right)
-    tmux split-window -t "${window_target}" -h -p 30 -c "${dir}"
+    tmux split-window -t "${window_target}" -h -p 20 -c "${dir}"
 
     # Split the left pane vertically
     # This splits Pane 0 (Left), creating a new Pane 1 (Bottom-Left).
@@ -83,7 +83,7 @@ ide() {
     # Send commands to each pane
     # Pane 1: Top-Left (nvim)
     # Pane 2: Bottom-Left (terminal)
-    # Pane 3: Right (opencode)
+    # Pane 3: Right (opencode or other AI assistant)
 
     # Wait a bit for panes to initialize
     sleep 0.5
