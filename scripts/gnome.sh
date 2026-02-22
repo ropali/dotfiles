@@ -32,6 +32,9 @@ install_homebrew_pkgs() {
 install_uv() {
   echo "Installing uv package manager..."
   curl -LsSf https://astral.sh/uv/install.sh | sh
+
+  echo "Installing Ruff Python Linter..."
+  uv tool install ruff@latest
 }
 
 # Function to setup GitHub SSH key
@@ -78,25 +81,6 @@ install_rust() {
   else
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   fi
-}
-
-install_app_launcher() {
-  echo "Installing App Launcher..."
-  curl -fsSL https://vicinae.com/install.sh | bash
-
-  # stow the config for the app launcher
-  cd ~/dotfiles
-  stow systemd
-
-  # Enable the service (starts at login)
-  systemctl --user enable vicinae.service
-
-  # Start the service now
-  systemctl --user start vicinae.service
-
-  # Check status
-  systemctl --user --no-pager status vicinae.service
-
 }
 
 install_google_antigavity() {
@@ -184,7 +168,6 @@ main() {
   install_ghostty
   clone_repos
   install_rust
-  install_app_launcher
   run_other_setups
   install_google_antigavity
   install_uv
