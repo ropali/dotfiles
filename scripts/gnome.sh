@@ -3,7 +3,7 @@
 # Function to install required packages
 install_packages() {
   echo "Installing required packages..."
-  sudo dnf install tmux nvim zsh gnome-tweaks golang gtk-murrine-engine -y --skip-unavailable
+  sudo dnf install tmux nvim zsh gnome-tweaks golang gtk-murrine-engine upx sshpass -y --skip-unavailable
 }
 
 stow_config() {
