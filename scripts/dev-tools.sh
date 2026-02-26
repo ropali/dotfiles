@@ -1,34 +1,29 @@
 #!/bin/bash
 
-# Function to install required packages
-install_packages() {
-  echo "Installing required packages..."
-  sudo dnf install tmux nvim zsh gnome-tweaks golang gtk-murrine-engine upx sshpass -y --skip-unavailable
-}
+# General development tools setup script
+# This script installs development tools that are not distro-specific
 
+# Function to stow dotfiles configuration
 stow_config() {
   echo "Stowing dotfiles config..."
   cd ~/dotfiles
   stow nvim tmux
 }
 
-# Function to install Ghostty
-install_ghostty() {
-  echo "Installing Ghostty..."
-  dnf copr enable scottames/ghostty
-  dnf install ghostty -y
-}
-
+# Function to install Homebrew
 install_homebrew() {
+  echo "Installing Homebrew..."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
 }
 
+# Function to install Homebrew packages
 install_homebrew_pkgs() {
+  echo "Installing Homebrew packages..."
   brew install jesseduffield/lazydocker/lazydocker
   brew install lazygit
 }
 
+# Function to install uv package manager
 install_uv() {
   echo "Installing uv package manager..."
   curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -63,6 +58,7 @@ clone_repos() {
   fi
 
   echo "Cloning wallpapers..."
+  mkdir -p ~/Pictures
   cd ~/Pictures
   if [ -d ~/Pictures/wallpapers ]; then
     echo "Wallpapers directory already exists. Skipping clone."
@@ -70,7 +66,12 @@ clone_repos() {
     git clone git@github.com:FrenzyExists/wallpapers.git
   fi
 
-  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+  # Install TPM (Tmux Plugin Manager)
+  if [ -d ~/.tmux/plugins/tpm ]; then
+    echo "TPM already installed. Skipping."
+  else
+    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+  fi
 }
 
 # Function to install Rust
@@ -83,23 +84,7 @@ install_rust() {
   fi
 }
 
-install_google_antigavity() {
-  echo "Installing Google Antigavity..."
-  sudo tee /etc/yum.repos.d/antigravity.repo <<EOL
-[antigravity-rpm]
-name=Antigravity RPM Repository
-baseurl=https://us-central1-yum.pkg.dev/projects/antigravity-auto-updater-dev/antigravity-rpm
-enabled=1
-gpgcheck=0
-EOL
-
-  sudo dnf makecache
-
-  sudo dnf install antigravity -y
-
-  echo "Google Antigravity installed successfully!"
-}
-
+# Function to install NVM and Node.js
 install_nvm_nodejs() {
   echo "Installing NVM..."
   # Download and install nvm:
@@ -116,33 +101,37 @@ install_nvm_nodejs() {
 
   # Verify npm version:
   npm -v # Should print "11.8.0".
-
 }
 
 # Function to run other setup scripts in the same folder
 run_other_setups() {
   echo "Running other setup scripts..."
-  local script_dir="$(pwd)"
+  local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
   if [ -f "$script_dir/nerdfonts.sh" ]; then
     bash "$script_dir/nerdfonts.sh"
   else
     echo "nerdfonts.sh not found, skipping."
   fi
+
   if [ -f "$script_dir/zsh.sh" ]; then
     bash "$script_dir/zsh.sh"
   else
     echo "zsh.sh not found, skipping."
   fi
+
   if [ -f "$script_dir/starship.sh" ]; then
     bash "$script_dir/starship.sh"
   else
     echo "starship.sh not found, skipping."
   fi
+
   if [ -f "$script_dir/docker.sh" ]; then
     bash "$script_dir/docker.sh"
   else
     echo "docker.sh not found, skipping."
   fi
+
   if [ -f "$script_dir/setup_android.sh" ]; then
     bash "$script_dir/setup_android.sh"
   else
@@ -156,21 +145,17 @@ run_other_setups() {
   fi
 }
 
-# Main function to run all setups
+# Main function to run all development tool setups
 main() {
-  # install the stow package first to ensure we can stow the configs
-  sudo dnf install stow -y
   stow_config
-  install_packages
   install_homebrew
   install_homebrew_pkgs
   setup_ssh
-  install_ghostty
   clone_repos
   install_rust
-  run_other_setups
-  install_google_antigavity
+  install_nvm_nodejs
   install_uv
+  run_other_setups
 }
 
 # Run the main function
