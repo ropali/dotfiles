@@ -248,37 +248,150 @@ run_other_setups() {
 }
 
 ###############################################################################
+# ARGUMENT PARSING
+###############################################################################
+
+print_usage() {
+  cat <<'EOF'
+Usage: dev-tools.sh [--only <list>] [--exclude <list>]
+
+Options:
+  --only <list>     Comma-separated list of components to install (default: all)
+  --exclude <list>  Comma-separated list of components to skip
+  -h, --help        Show this help and exit
+
+Components:
+  stow, homebrew, homebrew_pkgs, uv, ssh, clone, rust, nvm, other_setups
+EOF
+}
+
+parse_csv_list() {
+  local input="$1"
+  local -a items=()
+  local old_ifs="$IFS"
+  IFS=',' read -r -a items <<< "$input"
+  IFS="$old_ifs"
+  echo "${items[@]}"
+}
+
+###############################################################################
 # MAIN EXECUTION
 ###############################################################################
 
 main() {
   print_header "🛠️  DEVELOPMENT TOOLS INSTALLATION"
 
-  # Configuration
-  stow_config
-  print_divider
+  # Map component names to functions
+  declare -A STEPS=(
+    [stow]=stow_config
+    [homebrew]=install_homebrew
+    [homebrew_pkgs]=install_homebrew_pkgs
+    [uv]=install_uv
+    [ssh]=setup_ssh
+    [clone]=clone_repos
+    [rust]=install_rust
+    [nvm]=install_nvm_nodejs
+    [other_setups]=run_other_setups
+  )
 
-  # Package Managers
-  install_homebrew
-  install_homebrew_pkgs
-  install_uv
-  print_divider
+  local -a only_list=()
+  local -a exclude_list=()
 
-  # Version Control
-  setup_ssh
-  clone_repos
-  print_divider
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --only)
+        shift
+        [ -z "$1" ] && { print_error "--only requires a value"; print_usage; exit 1; }
+        read -r -a only_list <<< "$(parse_csv_list "$1")"
+        ;;
+      --exclude)
+        shift
+        [ -z "$1" ] && { print_error "--exclude requires a value"; print_usage; exit 1; }
+        read -r -a exclude_list <<< "$(parse_csv_list "$1")"
+        ;;
+      -h|--help)
+        print_usage
+        exit 0
+        ;;
+      *)
+        print_error "Unknown argument: $1"
+        print_usage
+        exit 1
+        ;;
+    esac
+    shift
+  done
 
-  # Programming Languages
-  install_rust
-  install_nvm_nodejs
-  print_divider
+  # Build initial execution list
+  local -a exec_list=()
+  if [ ${#only_list[@]} -gt 0 ]; then
+    exec_list=("${only_list[@]}")
+  else
+    exec_list=("${!STEPS[@]}")
+  fi
 
-  # Additional setups
-  run_other_setups
+  # Validate requested components
+  for item in "${exec_list[@]}"; do
+    if [ -z "${STEPS[$item]}" ]; then
+      print_error "Unknown component: $item"
+      print_usage
+      exit 1
+    fi
+  done
+  for item in "${exclude_list[@]}"; do
+    if [ -z "${STEPS[$item]}" ]; then
+      print_error "Unknown component in exclude list: $item"
+      print_usage
+      exit 1
+    fi
+  done
+
+  # Build exclude lookup
+  declare -A EXCLUDE=()
+  for item in "${exclude_list[@]}"; do
+    EXCLUDE["$item"]=1
+  done
+
+  # Run selected steps in a stable order
+  local -a ordered_steps=(
+    stow
+    homebrew
+    homebrew_pkgs
+    uv
+    ssh
+    clone
+    rust
+    nvm
+    other_setups
+  )
+
+  local step
+  for step in "${ordered_steps[@]}"; do
+    # Skip if not in exec_list
+    if [ ${#only_list[@]} -gt 0 ]; then
+      local found=0
+      local item
+      for item in "${exec_list[@]}"; do
+        if [ "$item" = "$step" ]; then
+          found=1
+          break
+        fi
+      done
+      [ $found -eq 0 ] && continue
+    fi
+
+    # Skip excluded
+    if [ -n "${EXCLUDE[$step]}" ]; then
+      print_warning "Skipping $step (excluded)"
+      continue
+    fi
+
+    "${STEPS[$step]}"
+    print_divider
+  done
 
   print_header "✅ DEVELOPMENT TOOLS INSTALLED SUCCESSFULLY"
 }
 
 # Run the main function
-main
+main "$@"
