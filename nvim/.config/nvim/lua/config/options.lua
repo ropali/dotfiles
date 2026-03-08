@@ -10,3 +10,5 @@ vim.g.lazyvim_python_lsp = "ty" --"pyright"
 vim.g.lazyvim_python_ruff = "ruff"
 
 vim.g.lazyvim_picker = "telescope"
+
+vim.g.lazyvim_rust_diagnostics = "rust-analyzer"
