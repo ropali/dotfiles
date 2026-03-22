@@ -6,7 +6,7 @@
 # Function to install required packages from Fedora repositories
 install_packages() {
   echo "Installing required packages from Fedora repositories..."
-  sudo dnf install tmux nvim zsh gnome-tweaks golang gtk-murrine-engine upx sshpass stow -y --skip-unavailable
+  sudo dnf install tmux nvim zsh gnome-tweaks golang gtk-murrine-engine upx sshpass stow fd-find -y --skip-unavailable
 }
 
 # Function to install Ghostty from COPR

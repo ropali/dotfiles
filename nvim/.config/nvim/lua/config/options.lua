@@ -12,3 +12,8 @@ vim.g.lazyvim_python_ruff = "ruff"
 vim.g.lazyvim_picker = "telescope"
 
 vim.g.lazyvim_rust_diagnostics = "rust-analyzer"
+
+-- Keep project root fixed to the startup cwd to support multi-top-level workspaces.
+vim.g.root_spec = { "cwd" }
+
+vim.opt.relativenumber = false
