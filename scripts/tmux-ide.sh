@@ -127,11 +127,31 @@ ide() {
     fi
   else
     # Inside a tmux session
-    # Create a new window in the current session
-    local window_index=$(tmux new-window -n "$window_name" -c "$target_dir" -P -F "#{window_index}")
+    local current_session
+    current_session="$(tmux display-message -p "#{session_name}")"
 
-    # Setup panes
-    setup_panes "${window_index}" "$target_dir"
+    if [ "$current_session" = "ide" ]; then
+      local current_window
+      local pane_count
+      current_window="$(tmux display-message -p "#{window_index}")"
+      pane_count="$(tmux display-message -p "#{window_panes}")"
+
+      if [ "$pane_count" -ne 1 ]; then
+        echo "Error: Current ide window already has ${pane_count} panes; refusing to reuse it." >&2
+        return 1
+      fi
+
+      tmux rename-window -t "$current_window" "$window_name"
+      tmux send-keys -t "${current_window}.1" "cd '${target_dir}'" C-m
+      setup_panes "${current_window}" "$target_dir"
+    else
+      # Create a new window in the current session
+      local window_index
+      window_index=$(tmux new-window -n "$window_name" -c "$target_dir" -P -F "#{window_index}")
+
+      # Setup panes
+      setup_panes "${window_index}" "$target_dir"
+    fi
   fi
 }
 
