@@ -77,6 +77,7 @@ install_homebrew() {
   print_item "Installing Homebrew..."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   print_success "Homebrew installed"
+  install_homebrew_pkgs
 }
 
 install_homebrew_pkgs() {
@@ -124,16 +125,6 @@ setup_ssh() {
 }
 
 clone_repos() {
-  print_section "📦 Repository Cloning"
-
-  print_item "Cloning dotfiles..."
-  cd ~
-  if [ -d ~/dotfiles ]; then
-    print_warning "Dotfiles directory already exists. Skipping clone."
-  else
-    git clone git@github.com:ropali/dotfiles.git
-    print_success "Dotfiles cloned"
-  fi
 
   print_item "Cloning wallpapers..."
   mkdir -p ~/Pictures
@@ -141,7 +132,7 @@ clone_repos() {
   if [ -d ~/Pictures/wallpapers ]; then
     print_warning "Wallpapers directory already exists. Skipping clone."
   else
-    git clone git@github.com:FrenzyExists/wallpapers.git
+    git clone https://github.com/FrenzyExists/wallpapers.git
     print_success "Wallpapers cloned"
   fi
 
@@ -187,6 +178,12 @@ install_nvm_nodejs() {
   node -v
   npm -v
   print_success "Node.js and npm verified"
+}
+
+istall_flatpaks() {
+  print_section "Flatpaks Softwares"
+
+  flatpak install flathub com.google.Chrome app.zen_browser.zen com.vivaldi.Vivaldi
 }
 
 ###############################################################################
@@ -269,7 +266,7 @@ parse_csv_list() {
   local input="$1"
   local -a items=()
   local old_ifs="$IFS"
-  IFS=',' read -r -a items <<< "$input"
+  IFS=',' read -r -a items <<<"$input"
   IFS="$old_ifs"
   echo "${items[@]}"
 }
@@ -299,25 +296,33 @@ main() {
 
   while [ $# -gt 0 ]; do
     case "$1" in
-      --only)
-        shift
-        [ -z "$1" ] && { print_error "--only requires a value"; print_usage; exit 1; }
-        read -r -a only_list <<< "$(parse_csv_list "$1")"
-        ;;
-      --exclude)
-        shift
-        [ -z "$1" ] && { print_error "--exclude requires a value"; print_usage; exit 1; }
-        read -r -a exclude_list <<< "$(parse_csv_list "$1")"
-        ;;
-      -h|--help)
-        print_usage
-        exit 0
-        ;;
-      *)
-        print_error "Unknown argument: $1"
+    --only)
+      shift
+      [ -z "$1" ] && {
+        print_error "--only requires a value"
         print_usage
         exit 1
-        ;;
+      }
+      read -r -a only_list <<<"$(parse_csv_list "$1")"
+      ;;
+    --exclude)
+      shift
+      [ -z "$1" ] && {
+        print_error "--exclude requires a value"
+        print_usage
+        exit 1
+      }
+      read -r -a exclude_list <<<"$(parse_csv_list "$1")"
+      ;;
+    -h | --help)
+      print_usage
+      exit 0
+      ;;
+    *)
+      print_error "Unknown argument: $1"
+      print_usage
+      exit 1
+      ;;
     esac
     shift
   done
