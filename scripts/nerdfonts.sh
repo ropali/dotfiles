@@ -1,12 +1,19 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # 1. Define the fonts you want (Match the names on Nerd Fonts GitHub)
 # Common options: JetBrainsMono, FiraCode, Hack, Iosevka, RobotoMono
 FONTS=("JetBrainsMono" "FiraCode" "Hack" "CommitMono" "VictorMono" "ZedMono")
 
 # 2. Versioning
 VERSION="v3.4.0" # Always check for the latest release version
-FONT_DIR="$HOME/test"
+FONT_DIR="${FONT_DIR:-/usr/local/share/fonts/nerd-fonts}"
+
+if [[ ${EUID} -ne 0 ]]; then
+  echo "Re-running with sudo to install fonts system-wide into $FONT_DIR..."
+  exec sudo FONT_DIR="$FONT_DIR" bash "$0" "$@"
+fi
 
 echo "--- Starting Nerd Font Installation ---"
 mkdir -p "$FONT_DIR"
@@ -19,17 +26,17 @@ for FONT in "${FONTS[@]}"; do
 
   echo "--> Downloading $FONT..."
   URL="https://github.com/ryanoasis/nerd-fonts/releases/download/${VERSION}/${FONT}.zip"
+  ZIP_PATH="/tmp/${FONT}.zip"
 
   # Download to a temporary location
-  curl -fLo "/tmp/${FONT}.zip" "$URL"
-
-  if [ $? -eq 0 ]; then
+  if curl -fLo "$ZIP_PATH" "$URL"; then
     echo "--> Extracting $FONT..."
     mkdir -p "$FONT_DIR/$FONT"
-    unzip -o "/tmp/${FONT}.zip" -d "$FONT_DIR/$FONT"
-    rm "/tmp/${FONT}.zip"
+    unzip -o "$ZIP_PATH" -d "$FONT_DIR/$FONT"
+    rm -f "$ZIP_PATH"
   else
     echo "ERROR: Could not download $FONT. Check the name and version."
+    exit 1
   fi
 done
 
