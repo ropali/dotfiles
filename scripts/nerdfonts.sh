@@ -8,7 +8,7 @@ FONTS=("JetBrainsMono" "FiraCode" "Hack" "CommitMono" "VictorMono" "ZedMono")
 
 # 2. Versioning
 VERSION="v3.4.0" # Always check for the latest release version
-FONT_DIR="${FONT_DIR:-/usr/local/share/fonts/nerd-fonts}"
+FONT_DIR="${FONT_DIR:-~/.local/share/fonts}"
 
 if [[ ${EUID} -ne 0 ]]; then
   echo "Re-running with sudo to install fonts system-wide into $FONT_DIR..."

@@ -71,6 +71,7 @@ Redhat = "󱄛"
 RedHatEnterprise = "󱄛"
 Pop = ""
 Nobara = ""
+CachyOS = "󰣇"
 
 [username]
 show_always = true
