@@ -55,4 +55,9 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 export PATH=~/bin:$PATH
 
+# To fix tmux render issue on cachyos
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+
 fastfetch
