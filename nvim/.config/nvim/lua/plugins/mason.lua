@@ -1,6 +1,6 @@
 return {
   {
     "mason-org/mason.nvim",
-    opts = { ensure_installed = { "goimports", "gofumpt", "gomodifytags", "impl", "delve", "rust-analyzer" } },
+    opts = { ensure_installed = { "goimports", "gofumpt", "gomodifytags", "impl", "delve" } },
   },
 }
