@@ -148,7 +148,7 @@ return {
           return true
         end,
         vtsls = function(_, opts)
-          LazyVim.lsp.on_attach(function(client, buffer)
+          Snacks.util.lsp.on({ name = "vtsls" }, function(buffer, client)
             client.commands["_typescript.moveToFileRefactoring"] = function(command, ctx)
               ---@type string, string, lsp.Range
               local action, uri, range = unpack(command.arguments)
@@ -197,7 +197,7 @@ return {
                 end)
               end)
             end
-          end, "vtsls")
+          end)
           -- copy typescript settings to javascript
           opts.settings.javascript =
             vim.tbl_deep_extend("force", {}, opts.settings.typescript, opts.settings.javascript or {})
