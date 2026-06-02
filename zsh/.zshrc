@@ -23,7 +23,9 @@ export PATH="/opt/cmdline-tools/bin:$PATH"
 export PATH="$PATH:/home/ropali/.lmstudio/bin"
 # End of LM Studio CLI section
 
-. "$HOME/.cargo/env"
+# Cargo (Arch package may not create ~/.cargo/env)
+export PATH="$HOME/.cargo/bin:$PATH"
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
 export PATH=${PATH}:`go env GOPATH`/bin
 
@@ -61,3 +63,7 @@ export LC_ALL=en_US.UTF-8
 
 
 fastfetch
+
+
+# Added by Antigravity CLI installer
+export PATH="$HOME/.local/bin:$PATH"
