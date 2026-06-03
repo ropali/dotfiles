@@ -67,3 +67,8 @@ fastfetch
 
 # Added by Antigravity CLI installer
 export PATH="$HOME/.local/bin:$PATH"
+
+# Automatically start or attach to a tmux session named 'main'
+if [ -z "$TMUX" ] && command -v tmux &>/dev/null; then
+    exec tmux new-session -A -s main
+fi

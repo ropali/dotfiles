@@ -44,7 +44,7 @@ hl.on("window.open", function(w)
 	local class = string.lower(w.class or "")
 
 	-- Always open Vivaldi browser in a new workspace silently (follow = false)
-	if class == "vivaldi-stable" or class == "vivaldi" then
+	if class == "vivaldi-stable" or class == "vivaldi" or class == "steam" then
 		hl.dispatch(hl.dsp.window.move({ workspace = "empty", follow = false }))
 	end
 end)
