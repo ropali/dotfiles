@@ -7,6 +7,11 @@ return {
     "nvim-treesitter/nvim-treesitter",
     "nvim-neotest/neotest-go",
   },
+  opts = {
+    adapters = {
+      ["rustaceanvim.neotest"] = {},
+    },
+  },
   config = function()
     require("neotest").setup({
       adapters = {

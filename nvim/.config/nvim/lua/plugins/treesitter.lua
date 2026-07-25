@@ -1,6 +1,6 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = { ensure_installed = { "go", "gomod", "gowork", "gosum", "rst", "ninja" } },
+    opts = { ensure_installed = { "go", "gomod", "gowork", "gosum", "rst", "ninja", "rust", "ron" } },
   },
 }

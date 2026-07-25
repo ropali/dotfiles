@@ -4,6 +4,10 @@ return {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
+        bacon_ls = {
+          enabled = diagnostics == "bacon-ls",
+        },
+        rust_analyzer = { enabled = false },
         tailwindcss = {
           -- exclude a filetype from the default_config
           filetypes_exclude = { "markdown" },
