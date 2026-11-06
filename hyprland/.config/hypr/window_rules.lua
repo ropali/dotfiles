@@ -48,3 +48,13 @@ hl.on("window.open", function(w)
 		hl.dispatch(hl.dsp.window.move({ workspace = "empty", follow = false }))
 	end
 end)
+
+hl.on("window.open", function(w)
+	-- Normalize class to lowercase for case-insensitive matching
+	local class = string.lower(w.class or "")
+
+	-- Always open Vivaldi browser in a new workspace silently (follow = false)
+	if class == "ghostty" then
+		hl.dispatch(hl.dsp.window.move({ workspace = "2", follow = false }))
+	end
+end)

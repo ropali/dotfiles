@@ -20,7 +20,9 @@ hl.monitor({
 
 -- See https://wiki.hypr.land/Configuring/Basics/Autostart/
 hl.on("hyprland.start", function()
-	hl.exec_cmd("qs -c noctalia-shell")
+	hl.exec_cmd("qs -p $HOME/dotfiles/quickshell --daemonize")
+	hl.exec_cmd("[workspace 1 silent] google-chrome-stable --restore-last-session")
+	hl.exec_cmd("[workspace 2 silent] ghostty")
 end)
 
 -------------------------------
@@ -76,7 +78,17 @@ require("animations")
 -- Layer rules
 hl.layer_rule({
 	name = "noctalia",
-	match = { namespace = "noctalia-background-.*$" },
+	match = { namespace = "^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd|window-switcher)$" },
+	no_anim = true,
+	ignore_alpha = 0.5,
+	blur = true,
+	blur_popups = true,
+})
+
+hl.layer_rule({
+	name = "custom-shell",
+	match = { namespace = "^custom-shell-bar$" },
+	no_anim = true,
 	ignore_alpha = 0.5,
 	blur = true,
 	blur_popups = true,
@@ -160,5 +172,5 @@ require("keybindings")
 
 require("window_rules")
 
--- Noctalia colors theme
-require("noctalia.noctalia-colors")
+-- Static compositor colors for custom-shell
+require("custom-shell-colors")
