@@ -34,7 +34,7 @@ PanelWindow {
     focusable: false
 
     WlrLayershell.layer: WlrLayer.Top
-    WlrLayershell.namespace: "custom-shell-bar"
+    WlrLayershell.namespace: "phantom-bar"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
     mask: Region {

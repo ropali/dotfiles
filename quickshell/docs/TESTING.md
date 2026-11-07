@@ -42,7 +42,7 @@ Observed:
 
 - `Configuration Loaded` with no QML errors.
 - Layer surface exists on the monitor:
-  `namespace: custom-shell-bar`, full-width surface, bar height 34 + 4 margin.
+  `namespace: phantom-bar`, full-width surface, bar height 34 + 4 margin.
 - Bar renders on the monitor (screenshot taken with `grim`).
 - Popup components were additionally rendered in a copied config with
   `shown: true` to validate their layout: calendar, network, Bluetooth, audio, theme switcher and power menu
@@ -137,9 +137,9 @@ Results:
 | Check | Result |
 |---|---|
 | Noctalia stopped | No `noctalia` process or layer surfaces remain |
-| Custom shell running | One instance (PID 91159 at test time), config `$HOME/dotfiles/quickshell` |
-| Bar layer | `custom-shell-bar`, `0 4 2560 38` |
-| Wallpaper layer | `custom-shell-wallpaper`, `0 0 2560 1440` |
+| Phantom running | One instance (PID 91159 at test time), config `$HOME/dotfiles/quickshell` |
+| Bar layer | `phantom-bar`, `0 4 2560 38` |
+| Wallpaper layer | `phantom-wallpaper`, `0 0 2560 1440` |
 | Tray watcher | `org.kde.StatusNotifierWatcher` and `StatusNotifierHost` owned by `qs` |
 | Tray icons | Populate after Noctalia releases the watcher |
 | Notification daemon | No owner for `org.freedesktop.Notifications` (expected until Milestone 4) |
@@ -152,7 +152,7 @@ exact command verified manually, and both edited Lua files pass `luac -p`.
 
 - `noctalia-qs` warns that it was built against Qt 6.11.2 while Qt 6.12.0 is
   installed. It runs, but the package should be rebuilt.
-- The session now runs only the custom shell, so it owns the StatusNotifier
+- The session now runs only Phantom, so it owns the StatusNotifier
   watcher and tray icons populate. If Noctalia is started manually for fallback,
   it takes the watcher back and the custom tray will be empty.
 - There is no notification daemon until Milestone 4. Applications cannot show

@@ -1,5 +1,6 @@
 # Noctalia to Quickshell Migration Guide
 
+**Project name:** Phantom  
 **Platform:** CachyOS + Hyprland + Wayland  
 **Shell framework:** Quickshell + QML  
 **Migration strategy:** Incremental replacement  
@@ -11,7 +12,7 @@
 
 Replace Noctalia with a custom Quickshell-based desktop shell while retaining Hyprland as the window manager and compositor.
 
-The custom shell should provide the essential functionality of Noctalia without depending on Noctalia itself.
+Phantom should provide the essential functionality of Noctalia without depending on Noctalia itself.
 
 ### Core principles
 
@@ -26,6 +27,17 @@ The custom shell should provide the essential functionality of Noctalia without 
 9. Keep Noctalia available as a fallback throughout development.
 10. Let the user perform final visual and behavioral acceptance testing.
 11. Use `$HOME` for every file or directory path that points into the user's home directory. Never hardcode a username or an absolute `/home/<user>` path.
+12. Treat Phantom as a standalone project. Do not couple it permanently to the dotfiles repository, a specific user name, or Noctalia's runtime files.
+
+### Project identity
+
+The shell is named **Phantom**. The long-term goal is a standalone repository and
+installable desktop shell, not a subdirectory of a personal dotfiles repository.
+
+For now the source lives at `$HOME/dotfiles/quickshell` while it is developed
+alongside the Hyprland configuration. The extraction, packaging and path plan is
+documented in `docs/STANDALONE.md`. Runtime layer namespaces already use the
+`phantom-*` prefix.
 
 ### Path policy
 
@@ -94,7 +106,7 @@ Quickshell is responsible for:
 All generated files must remain inside the project root.
 
 ```text
-custom-shell/
+phantom/
 │
 ├── shell.qml
 │

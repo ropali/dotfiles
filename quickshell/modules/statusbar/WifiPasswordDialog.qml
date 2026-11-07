@@ -25,7 +25,7 @@ PanelWindow {
     exclusiveZone: -1
 
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "custom-shell-wifi-password"
+    WlrLayershell.namespace: "phantom-wifi-password"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
     onShownChanged: {

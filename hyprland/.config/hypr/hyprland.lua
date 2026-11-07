@@ -86,8 +86,8 @@ hl.layer_rule({
 })
 
 hl.layer_rule({
-	name = "custom-shell",
-	match = { namespace = "^custom-shell-bar$" },
+	name = "phantom",
+	match = { namespace = "^phantom-bar$" },
 	no_anim = true,
 	ignore_alpha = 0.5,
 	blur = true,
@@ -172,5 +172,5 @@ require("keybindings")
 
 require("window_rules")
 
--- Static compositor colors for custom-shell
-require("custom-shell-colors")
+-- Static compositor colors for Phantom
+require("phantom-colors")

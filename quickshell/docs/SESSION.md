@@ -19,8 +19,8 @@ from the Hyprland startup command but remains installed as a manual fallback.
   treatment as the old Noctalia bar:
   ```lua
   hl.layer_rule({
-  	name = "custom-shell",
-  	match = { namespace = "^custom-shell-bar$" },
+  	name = "phantom",
+  	match = { namespace = "^phantom-bar$" },
   	no_anim = true,
   	ignore_alpha = 0.5,
   	blur = true,
@@ -36,18 +36,18 @@ from the Hyprland startup command but remains installed as a manual fallback.
 - Left the Noctalia launcher/control-center/settings/annotation/lock binds in
   place for the manual Noctalia fallback.
 
-### `hyprland/.config/hypr/custom-shell-colors.lua`
+### `hyprland/.config/hypr/phantom-colors.lua`
 
 Noctalia generated `noctalia/noctalia-colors.lua` and removed it when it stopped.
 The final `require("noctalia.noctalia-colors")` therefore failed after the
 switch. It was replaced with a static compositor palette:
 
 ```lua
-require("custom-shell-colors")
+require("phantom-colors")
 ```
 
 The new file holds the same Gruvbox active/inactive/group border colors and is
-symlinked from `$HOME/.config/hypr/custom-shell-colors.lua`.
+symlinked from `$HOME/.config/hypr/phantom-colors.lua`.
 
 No other Hyprland configuration was changed.
 
@@ -95,7 +95,7 @@ qs log -p $HOME/dotfiles/quickshell
 
 ## Noctalia manual fallback
 
-Noctalia remains installed. To use it as a fallback, stop the custom shell first
+Noctalia remains installed. To use it as a fallback, stop Phantom first
 so the two do not fight over the tray, wallpaper and exclusive zones:
 
 ```bash
@@ -120,17 +120,17 @@ Then log out and back in, or reload the Hyprland configuration.
 ## Verified in the live session
 
 - Noctalia process stopped; no `noctalia` layer surfaces remain.
-- Custom shell running (PID 91159 at verification time) (`qs -p ... --daemonize`).
+- Phantom running (PID 91159 at verification time) (`qs -p ... --daemonize`).
 - Layer surfaces:
-  - `custom-shell-wallpaper` at the background layer, 2560x1440.
-  - `custom-shell-bar` at the top layer, `0 4 2560 38`.
-- The custom shell owns `org.kde.StatusNotifierWatcher` and
+  - `phantom-wallpaper` at the background layer, 2560x1440.
+  - `phantom-bar` at the top layer, `0 4 2560 38`.
+- Phantom owns `org.kde.StatusNotifierWatcher` and
   `org.kde.StatusNotifierHost`, so tray icons populate.
 - No notification daemon exists (`org.freedesktop.Notifications` has no owner).
 - Only one Quickshell instance is running.
 - `hyprctl reload` succeeded and `hyprctl configerrors` is empty.
 - Compositor border colors resolve to Gruvbox (`ffb8bb26` active, `ff282828`
-  inactive) through `custom-shell-colors.lua`.
+  inactive) through `phantom-colors.lua`.
 - Workspace 3 was briefly activated and returned to workspace 2; the bar updated
   its active workspace both times.
 - An empty workspace screenshot matched the configured wallpaper's average

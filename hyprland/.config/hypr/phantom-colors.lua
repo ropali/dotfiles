@@ -1,4 +1,4 @@
--- Static compositor border colors for custom-shell.
+-- Static compositor border colors for Phantom.
 -- Kept independent from the removed Noctalia colors generator.
 local primary = "rgb(b8bb26)"
 local surface = "rgb(282828)"

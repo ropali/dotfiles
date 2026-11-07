@@ -19,7 +19,7 @@ PanelWindow {
     exclusiveZone: -1
 
     WlrLayershell.layer: WlrLayer.Background
-    WlrLayershell.namespace: "custom-shell-wallpaper"
+    WlrLayershell.namespace: "phantom-wallpaper"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
     mask: Region {}

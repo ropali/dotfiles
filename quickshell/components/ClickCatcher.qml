@@ -23,7 +23,7 @@ PanelWindow {
     exclusiveZone: -1
 
     WlrLayershell.layer: WlrLayer.Top
-    WlrLayershell.namespace: "custom-shell-click-catcher"
+    WlrLayershell.namespace: "phantom-click-catcher"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
     readonly property int barStrip: Config.Settings.barHeight + Config.Settings.screenMargin

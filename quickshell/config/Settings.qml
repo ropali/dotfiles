@@ -8,7 +8,7 @@ Singleton {
 
     // Percentage of the monitor width occupied by the bar. 80 means the bar
     // spans 80% of the screen, leaving 10% free on each side.
-    property int barWidthPercent: 80
+    property int barWidthPercent: 60
 
     // Minimum gap between the bar and the left/right screen edges. The bar is
     // clamped so it never gets closer than this even with barWidthPercent 100.

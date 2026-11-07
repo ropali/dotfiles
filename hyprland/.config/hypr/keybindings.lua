@@ -30,7 +30,7 @@ hl.bind(mainMod .. " + S", hl.dsp.exec_cmd(ipc .. "panel-toggle control-center")
 hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd(ipc .. "settings-toggle"))
 
 -- Media keys (via noctalia ipc) are disabled while Noctalia is replaced by
--- custom-shell. The direct wpctl/brightnessctl binds below remain active.
+-- Phantom. The direct wpctl/brightnessctl binds below remain active.
 -- hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd(ipc .. "volume-up"), { locked = true, repeating = true })
 -- hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd(ipc .. "volume-down"), { locked = true, repeating = true })
 -- hl.bind("XF86AudioMute", hl.dsp.exec_cmd(ipc .. "volume-mute"), { locked = true })

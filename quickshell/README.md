@@ -1,10 +1,12 @@
-# custom-shell
+# Phantom
 
-A modular Quickshell desktop shell for CachyOS + Hyprland + Wayland, built as an
-incremental replacement for Noctalia.
+Phantom is a modular Quickshell desktop shell for CachyOS + Hyprland + Wayland,
+built as an incremental replacement for Noctalia and intended to become a standalone project.
 
 This repository currently implements **Milestone 0** (environment preparation)
 and **Milestone 1** (status bar), plus the mandatory **global theming system**.
+It is intended to become a standalone project called Phantom; the extraction and
+packaging plan is in [`docs/STANDALONE.md`](docs/STANDALONE.md).
 
 ## Requirements
 
@@ -66,6 +68,7 @@ quickshell/
 │   ├── CONFIGURATION.md
 │   ├── PACKAGES.md
 │   ├── SESSION.md
+│   ├── STANDALONE.md
 │   ├── TESTING.md
 │   └── THEMING.md
 └── assets/
@@ -74,8 +77,8 @@ quickshell/
 ## Status bar
 
 - Floating, rounded, centered bar with configurable top/bottom placement,
-  height, edge gap and maximum width (`config/Settings.qml`).
-- Layer-shell surface, `custom-shell-bar` namespace, input region limited to the
+  height, percentage width and edge gap (`config/Settings.qml`).
+- Layer-shell surface, `phantom-bar` namespace, input region limited to the
   bar so the transparent strip does not eat clicks.
 - One bar instance per monitor.
 - Left: date and time, with a native QML calendar popup.
