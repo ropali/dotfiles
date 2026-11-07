@@ -20,7 +20,7 @@ hl.monitor({
 
 -- See https://wiki.hypr.land/Configuring/Basics/Autostart/
 hl.on("hyprland.start", function()
-	hl.exec_cmd("qs -p $HOME/dotfiles/quickshell --daemonize")
+	hl.exec_cmd("qs -p $HOME/Workspace/phantom-shell --daemonize")
 	hl.exec_cmd("[workspace 1 silent] google-chrome-stable --restore-last-session")
 	hl.exec_cmd("[workspace 2 silent] ghostty")
 end)

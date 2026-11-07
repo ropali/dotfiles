@@ -1,108 +1,143 @@
-#!/usr/bin/zsh
+#!/bin/bash
+set -euo pipefail
 
-# --- Configuration ---
-SDK_DIR="$HOME/Android/Sdk"
-STUDIO_PARENT_DIR="$HOME/Apps" # Installing in Home to avoid sudo/permission issues across distros
-ZSHRC="$HOME/.zshrc"
+# Android Development Setup for Arch-based systems (CachyOS)
+# Android Studio, the SDK command-line tools, build-tools and the emulator are
+# installed as proper packages (AUR + official repos) instead of downloading
+# fixed-version tarballs from Google (those URLs go stale and break).
 
-echo "🚀 Starting Universal Android SDK Setup..."
-
-# 1. Distro-Specific Dependency Detection
-if [ -f /etc/fedora-release ] || [ -f /etc/nobara-release ]; then
-  echo "📦 Detected Fedora/Nobara. Using DNF..."
-  sudo dnf install -y java-17-openjdk-devel zlib.i686 ncurses-libs.i686 libstdc++.i686 mesa-libGL.i686 wget tar unzip
-elif [ -f /etc/debian_version ] || [ -f /etc/lsb-release ]; then
-  echo "📦 Detected Ubuntu/Debian. Using APT..."
-  sudo apt update
-  sudo apt install -y openjdk-17-jdk libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 wget tar unzip
-elif [ -f /etc/arch-release ]; then
-  echo "📦 Detected Arch Linux. Using Pacman..."
-  sudo pacman -S --needed jdk17-openjdk lib32-zlib lib32-gcc-libs wget tar unzip
+if [ ! -f /etc/arch-release ]; then
+  echo "This script supports Arch-based systems only (Arch, CachyOS, Manjaro...)."
+  exit 1
 fi
 
-# 2. Download and Install Android SDK Command Line Tools
-echo "🌐 Downloading Android SDK Command Line Tools..."
-SDK_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-linux-14742923_latest.zip"
-wget -O /tmp/commandlinetools.zip "$SDK_TOOLS_URL"
+if [ "$(id -u)" -eq 0 ]; then
+  echo "Run this script as a normal user; it uses sudo where needed."
+  exit 1
+fi
 
-mkdir -p "$SDK_DIR/cmdline-tools"
-unzip /tmp/commandlinetools.zip -d "$SDK_DIR/cmdline-tools"
-mv "$SDK_DIR/cmdline-tools/cmdline-tools" "$SDK_DIR/cmdline-tools/latest"
+# --- Detect an AUR helper ---------------------------------------------------
+AUR_HELPER=""
+for helper in paru yay; do
+  if command -v "$helper" >/dev/null 2>&1; then
+    AUR_HELPER="$helper"
+    break
+  fi
+done
 
-# Accept licenses
-echo "📜 Accepting Android SDK licenses..."
-yes | "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK_DIR" --licenses
+if [ -z "$AUR_HELPER" ]; then
+  echo "ERROR: No AUR helper (paru or yay) found."
+  echo "Install one first, e.g.:"
+  echo "  sudo pacman -S --needed base-devel git"
+  echo "  git clone https://aur.archlinux.org/paru.git /tmp/paru"
+  echo "  (cd /tmp/paru && makepkg -si)"
+  exit 1
+fi
 
-# Install essential SDK components
-echo "📦 Installing Android SDK components..."
-"$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK_DIR" "platform-tools" "build-tools;34.0.0" "platforms;android-34" "emulator"
+echo "Using AUR helper: $AUR_HELPER"
 
-# 3. Install Gradle
-echo "🔧 Installing Gradle..."
-GRADLE_VERSION="8.5"
-GRADLE_URL="https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-all.zip"
-wget -O /tmp/gradle.zip "$GRADLE_URL"
+# --- Package lists ----------------------------------------------------------
+# Official repos
+REPO_PKGS=(
+  jdk17-openjdk
+  gradle
+  android-tools      # adb, fastboot
+  android-udev       # udev rules so adb works without root
+  base-devel         # required to build AUR packages
+  git
+  wget
+  tar
+  unzip
+)
 
-sudo mkdir -p /opt/gradle
-sudo unzip /tmp/gradle.zip -d /opt/gradle
-sudo mv /opt/gradle/gradle-${GRADLE_VERSION} /opt/gradle/latest
-
-# 4. Download and Install Android Studio
-STUDIO_PARENT_DIR="$HOME/Apps"
-if [ -f ~/Downloads/android-studio-linux.tar.gz ]; then
-    echo "Using local Android Studio download..."
-    TAR_FILE=~/Downloads/android-studio-linux.tar.gz
+# 32-bit compatibility libraries are only useful if multilib is enabled
+if grep -q '^\[multilib\]' /etc/pacman.conf; then
+  REPO_PKGS+=(lib32-gcc-libs lib32-zlib lib32-ncurses lib32-mesa)
 else
-    echo "🌐 Downloading Android Studio..."
-    STUDIO_URL="https://dl.google.com/dl/android/studio/install/2024.2.1.11/android-studio-panda1-patch1-linux.tar.gz"
-    mkdir -p "$STUDIO_PARENT_DIR"
-    wget -O /tmp/android-studio.tar.gz "$STUDIO_URL"
-    TAR_FILE=/tmp/android-studio.tar.gz
+  echo "WARNING: multilib is not enabled; skipping lib32 packages."
+  echo "         Enable it in /etc/pacman.conf if you need 32-bit SDK tools."
 fi
 
-echo "🏗️ Extracting Android Studio to $STUDIO_PARENT_DIR..."
-tar -xzf "$TAR_FILE" -C "$STUDIO_PARENT_DIR"
+# AUR packages. These install into /opt/android-sdk (SDK) and /opt/android-studio.
+AUR_PKGS=(
+  android-studio
+  android-sdk-cmdline-tools-latest
+  android-sdk-build-tools
+  android-emulator
+)
 
-echo "📝 Creating desktop entry for Android Studio..."
-mkdir -p ~/.local/share/applications
-cat > ~/.local/share/applications/android-studio.desktop <<EOF
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Android Studio
-Exec=$STUDIO_PARENT_DIR/android-studio/bin/studio.sh
-Icon=$STUDIO_PARENT_DIR/android-studio/bin/studio.png
-Terminal=false
-StartupWMClass=jetbrains-studio
-Categories=Development;IDE;
-EOF
+# --- Install ----------------------------------------------------------------
+echo "Installing repository packages..."
+sudo pacman -Syu --needed --noconfirm "${REPO_PKGS[@]}"
 
-# 5. Inject Environment Variables into .zshrc (Checking for duplicates)
-echo "📝 Configuring .zshrc..."
-if ! grep -q "ANDROID_HOME" "$ZSHRC"; then
-  cat <<EOF >>"$ZSHRC"
+echo "Installing AUR packages with $AUR_HELPER (this can take a while)..."
+"$AUR_HELPER" -S --needed --noconfirm "${AUR_PKGS[@]}"
 
-# --- Android SDK ---
-export ANDROID_HOME="$SDK_DIR"
-export PATH="\$PATH:\$ANDROID_HOME/platform-tools"
-export PATH="\$PATH:\$ANDROID_HOME/cmdline-tools/latest/bin"
-export PATH="\$PATH:\$ANDROID_HOME/build-tools/34.0.0"
-export PATH="\$PATH:\$ANDROID_HOME/emulator"
-export GRADLE_HOME="/opt/gradle/latest"
-export PATH="\$PATH:\$GRADLE_HOME/bin"
-EOF
-  echo "✅ Added paths to $ZSHRC"
+# Make the SDK tools available in this shell (packages ship profile.d files
+# that set ANDROID_HOME=/opt/android-sdk and extend PATH for new logins).
+for profile in \
+  /etc/profile.d/android-sdk-cmdline-tools-latest.sh \
+  /etc/profile.d/android-emulator.sh; do
+  if [ -r "$profile" ]; then
+    # shellcheck source=/dev/null
+    . "$profile"
+  fi
+done
+
+# --- Accept SDK licenses ----------------------------------------------------
+# The AUR SDK lives in /opt/android-sdk and is root-owned, so licenses must be
+# accepted with sudo. Studio and Gradle builds need these accepted.
+SDKMANAGER="/opt/android-sdk/cmdline-tools/latest/bin/sdkmanager"
+if [ -x "$SDKMANAGER" ]; then
+  echo "Accepting Android SDK licenses..."
+  # 'yes' exits with SIGPIPE once sdkmanager stops reading, so disable pipefail
+  # here to avoid a false failure.
+  set +o pipefail
+  if ! yes | sudo "$SDKMANAGER" --licenses >/dev/null; then
+    echo "WARNING: Could not auto-accept licenses; accept them in Android Studio."
+  fi
+  set -o pipefail
 else
-  echo "ℹ️ Android paths already exist in $ZSHRC, skipping..."
+  echo "WARNING: sdkmanager not found at $SDKMANAGER."
 fi
 
-# 5. Handle KVM Permissions (For Emulator)
-sudo usermod -aG kvm $USER 2>/dev/null || echo "⚠️ Could not add to KVM group (ignore if on Mac/WSL)"
+# --- Device access groups ---------------------------------------------------
+echo "Configuring device access groups..."
+sudo groupadd -f adbusers 2>/dev/null || true
+sudo usermod -aG adbusers "$USER" 2>/dev/null || true
 
+if [ -e /dev/kvm ]; then
+  sudo usermod -aG kvm "$USER" 2>/dev/null || true
+else
+  echo "WARNING: /dev/kvm not found; the emulator needs hardware virtualization"
+  echo "         (enable VT-x/AMD-V and the kvm module)."
+fi
+
+# --- Stale config from the old script --------------------------------------
+if grep -q '^# --- Android SDK ---' "$HOME/.zshrc" 2>/dev/null; then
+  echo "WARNING: ~/.zshrc still contains the old Android SDK block pointing at"
+  echo "         ~/Android/Sdk. The packages now set ANDROID_HOME=/opt/android-sdk"
+  echo "         via /etc/profile.d, so remove that old block to avoid conflicts."
+fi
+
+# --- Verify -----------------------------------------------------------------
+echo ""
+echo "Verifying installation..."
+for bin in adb gradle java sdkmanager emulator android-studio; do
+  if command -v "$bin" >/dev/null 2>&1; then
+    echo "  ✓ $bin -> $(command -v "$bin")"
+  else
+    echo "  ✗ $bin not found"
+  fi
+done
+
+echo ""
 echo "--------------------------------------------------------"
-echo "🏁 SETUP FINISHED!"
-echo "1. Run: source ~/.zshrc"
-echo "2. Start Studio: $STUDIO_PARENT_DIR/android-studio/bin/studio.sh"
-echo "3. In the Setup Wizard, use '$SDK_DIR' as your SDK path."
-echo "4. Verify SDK: adb devices, gradle -v, sdkmanager --list"
+echo "🏁 ANDROID SETUP COMPLETE"
+echo "  SDK location : /opt/android-sdk (ANDROID_HOME / ANDROID_SDK_ROOT)"
+echo "  Studio       : run 'android-studio' or from the app menu"
+echo ""
+echo "Log out and back in (or reboot) so the 'adbusers'/'kvm' group changes and"
+echo "the /etc/profile.d environment variables take effect."
+echo "Then verify with: adb devices, sdkmanager --list, gradle -v"
 echo "--------------------------------------------------------"

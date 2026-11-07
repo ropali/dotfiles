@@ -8,11 +8,11 @@ stow starship
 PLUGIN_DIR="$HOME/.zsh/plugins"
 mkdir -p "$PLUGIN_DIR"
 
-# 1. Install Zsh using DNF
+# 1. Install Zsh using pacman
 echo "--- Checking for Zsh installation ---"
 if ! command -v zsh &>/dev/null; then
   echo "Installing Zsh..."
-  sudo dnf install -y zsh
+  sudo pacman -S --needed --noconfirm zsh
 else
   echo "--> Zsh is already installed. Skipping..."
 fi

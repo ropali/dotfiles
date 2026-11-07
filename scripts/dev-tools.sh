@@ -64,7 +64,7 @@ stow_config() {
   print_section "📁 Dotfiles Configuration"
   print_item "Stowing dotfiles config..."
   cd ~/dotfiles
-  stow nvim tmux zsh
+  stow nvim tmux zsh systemd
   print_success "Dotfiles stowed successfully"
 }
 
@@ -72,19 +72,15 @@ stow_config() {
 # SECTION: Package Managers
 ###############################################################################
 
-install_homebrew() {
-  print_section "🍺 Homebrew Package Manager"
-  print_item "Installing Homebrew..."
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  print_success "Homebrew installed"
-  install_homebrew_pkgs
-}
-
-install_homebrew_pkgs() {
-  print_item "Installing Homebrew packages..."
-  brew install jesseduffield/lazydocker/lazydocker
-  brew install lazygit
-  print_success "Homebrew packages installed"
+install_arch_extras() {
+  print_section "📦 Arch Extra Packages"
+  print_item "Installing lazygit and lazydocker..."
+  if command -v pacman >/dev/null 2>&1; then
+    sudo pacman -S --needed --noconfirm lazygit lazydocker
+    print_success "lazygit and lazydocker installed"
+  else
+    print_warning "pacman not found. Skipping Arch extra packages."
+  fi
 }
 
 install_uv() {
@@ -180,10 +176,20 @@ install_nvm_nodejs() {
   print_success "Node.js and npm verified"
 }
 
-istall_flatpaks() {
-  print_section "Flatpaks Softwares"
+install_flatpaks() {
+  print_section "Flatpak Softwares"
 
-  flatpak install flathub com.google.Chrome app.zen_browser.zen com.vivaldi.Vivaldi
+  if ! command -v flatpak >/dev/null 2>&1; then
+    print_item "Installing flatpak..."
+    sudo pacman -S --needed --noconfirm flatpak
+  fi
+
+  print_item "Ensuring the Flathub remote exists..."
+  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+  print_item "Installing flatpak applications..."
+  flatpak install -y flathub com.google.Chrome app.zen_browser.zen com.vivaldi.Vivaldi
+  print_success "Flatpak applications installed"
 }
 
 ###############################################################################
@@ -258,7 +264,7 @@ Options:
   -h, --help        Show this help and exit
 
 Components:
-  stow, homebrew, homebrew_pkgs, uv, ssh, clone, rust, nvm, other_setups
+  stow, extras, flatpaks, uv, ssh, clone, rust, nvm, other_setups
 EOF
 }
 
@@ -281,8 +287,8 @@ main() {
   # Map component names to functions
   declare -A STEPS=(
     [stow]=stow_config
-    [homebrew]=install_homebrew
-    [homebrew_pkgs]=install_homebrew_pkgs
+    [extras]=install_arch_extras
+    [flatpaks]=install_flatpaks
     [uv]=install_uv
     [ssh]=setup_ssh
     [clone]=clone_repos
@@ -360,8 +366,8 @@ main() {
   # Run selected steps in a stable order
   local -a ordered_steps=(
     stow
-    homebrew
-    homebrew_pkgs
+    extras
+    flatpaks
     uv
     ssh
     clone

@@ -6,8 +6,8 @@ stow starship
 
 # 1. Install Zsh and Starship Binary
 echo "--- Installing Zsh and Starship ---"
-# Fedora uses dnf; we ensure zsh is installed first
-sudo dnf install -y zsh
+# Arch uses pacman; we ensure zsh is installed first
+sudo pacman -S --needed --noconfirm zsh
 
 # Install Starship via the official cross-shell script
 curl -sS https://starship.rs/install.sh | sh

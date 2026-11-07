@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Main setup script for Fedora-based development environment
+# Main setup script for Arch-based development environment (CachyOS)
 # This script orchestrates the setup by calling distro-specific and general tool setup scripts
 
 # Get the directory where this script is located
@@ -46,14 +46,18 @@ print_error() {
     echo -e "${RED}✗ $1${NC}"
 }
 
-# Run Fedora-specific setup
-run_fedora_setup() {
-    print_subheader "Fedora System Setup"
-    if [ -f "$SCRIPT_DIR/fedora.sh" ]; then
-        bash "$SCRIPT_DIR/fedora.sh"
-        print_success "Fedora setup completed"
+# Run Arch-specific setup
+run_arch_setup() {
+    print_subheader "Arch System Setup"
+    if [ -f /etc/arch-release ]; then
+        if [ -f "$SCRIPT_DIR/arch.sh" ]; then
+            bash "$SCRIPT_DIR/arch.sh"
+            print_success "Arch setup completed"
+        else
+            print_warning "arch.sh not found. Skipping Arch-specific setup."
+        fi
     else
-        print_warning "fedora.sh not found. Skipping Fedora-specific setup."
+        print_warning "Not an Arch-based system. Skipping Arch-specific setup."
     fi
 }
 
@@ -72,7 +76,7 @@ run_dev_tools_setup() {
 main() {
     print_header "🚀 DEVELOPMENT ENVIRONMENT SETUP"
 
-    run_fedora_setup
+    run_arch_setup
     run_dev_tools_setup
 
     print_header "✅ SETUP COMPLETE!"
