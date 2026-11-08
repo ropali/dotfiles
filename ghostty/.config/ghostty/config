@@ -42,8 +42,8 @@
 # # Just for example:
 # resize-overlay-duration = 4s 200ms
 
-theme = noctalia
-# theme = GruvboxDark
+# Colours follow the Caelestia shell scheme (generated on every scheme change)
+config-file = ?~/.local/state/caelestia/theme/ghostty.conf
 # font-family = Meslo LGS Nerd Font Mono
 # font-family = CaskaydiaMono Nerd Font
 font-family = CommitMono Nerd Font Mono

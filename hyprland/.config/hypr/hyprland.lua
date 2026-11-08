@@ -1,176 +1,84 @@
--- Hyprland Lua Config file.
--- Ported from legacy hyprland_old.conf.
--- Refer to the wiki for more information: https://wiki.hypr.land/Configuring/Start/
+local home = os.getenv("HOME")
+local hypr = home .. "/.config/hypr"
+package.path = package.path .. ";" .. home .. "/.config/caelestia/?.lua"
 
-------------------
----- MONITORS ----
-------------------
+-- Create a file if it doesn't exist, optionally with initial content
+local function maybe_create(file, content)
+	local f = io.open(file)
 
--- See https://wiki.hypr.land/Configuring/Basics/Monitors/
+	if f then
+		f:close()
+		return true
+	end
+
+	f = io.open(file, "w")
+	if not f then
+		return false
+	end
+
+	if content then
+		f:write(content)
+	end
+	f:close()
+	return true
+end
+
+-- Copy src to dst, but only if dst doesn't already exist
+local function maybe_copy(src, dst)
+	local out = io.open(dst)
+	if out then
+		out:close()
+		return
+	end
+
+	local input = io.open(src, "r")
+	if not input then
+		return
+	end
+
+	out = io.open(dst, "w")
+	if out then
+		out:write(input:read("*a"))
+		out:close()
+	end
+	input:close()
+end
+
+-- Maybe set current colours to defaults
+maybe_copy(hypr .. "/scheme/default.lua", hypr .. "/scheme/current.lua")
+
+-- User variables
+local overrides = maybe_create(home .. "/.config/caelestia/hypr-vars.lua", "return {}\n") and require("hypr-vars") or {}
+
+if type(overrides) == "table" then
+	local vars = require("variables")
+	for k, v in pairs(overrides) do
+		vars[k] = v
+	end
+end
+
+-- Default monitor conf
 hl.monitor({
 	output = "",
-	mode = "3840x2160@160",
+	mode = "preferred",
 	position = "auto",
-	scale = "auto",
+	scale = "1.3",
 })
 
--------------------
----- AUTOSTART ----
--------------------
+-- Configs
+require("hyprland.env")
+require("hyprland.general")
+require("hyprland.input")
+require("hyprland.misc")
+require("hyprland.animations")
+require("hyprland.decoration")
+require("hyprland.group")
+require("hyprland.execs")
+require("hyprland.rules")
+require("hyprland.gestures")
+require("hyprland.keybinds")
 
--- See https://wiki.hypr.land/Configuring/Basics/Autostart/
-hl.on("hyprland.start", function()
-	hl.exec_cmd("qs -p $HOME/Workspace/phantom-shell --daemonize")
-	hl.exec_cmd("[workspace 1 silent] google-chrome-stable --restore-last-session")
-	hl.exec_cmd("[workspace 2 silent] ghostty")
-end)
-
--------------------------------
----- ENVIRONMENT VARIABLES ----
--------------------------------
-
--- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Environment-variables/
-hl.env("XCURSOR_SIZE", "24")
-hl.env("HYPRCURSOR_SIZE", "24")
-hl.env("QT_QPA_PLATFORMTHEME", "kde")
-hl.env("QT_STYLE_OVERRIDE", "kvantum")
-hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
-
------------------------
----- LOOK AND FEEL ----
------------------------
-
--- Refer to https://wiki.hypr.land/Configuring/Basics/Variables/
-hl.config({
-	general = {
-		gaps_in = 5,
-		gaps_out = 10,
-		layout = "dwindle",
-	},
-
-	decoration = {
-		rounding = 20,
-		rounding_power = 2,
-
-		shadow = {
-			enabled = true,
-			range = 4,
-			render_power = 3,
-			color = 0xee1a1a1a,
-		},
-
-		blur = {
-			enabled = true,
-			size = 3,
-			passes = 2,
-			vibrancy = 0.1696,
-		},
-	},
-
-	animations = {
-		enabled = true,
-	},
-})
-
--- Animations Configuration Loader
-require("animations")
-
--- Layer rules
-hl.layer_rule({
-	name = "noctalia",
-	match = { namespace = "^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd|window-switcher)$" },
-	no_anim = true,
-	ignore_alpha = 0.5,
-	blur = true,
-	blur_popups = true,
-})
-
-hl.layer_rule({
-	name = "phantom",
-	match = { namespace = "^phantom-bar$" },
-	no_anim = true,
-	ignore_alpha = 0.5,
-	blur = true,
-	blur_popups = true,
-})
-
--- Dwindle Layout
-hl.config({
-	dwindle = {
-		preserve_split = true,
-	},
-})
-
--- Master Layout
-hl.config({
-	master = {
-		new_status = "master",
-	},
-})
-
-----------------
-----  MISC  ----
-----------------
-
-hl.config({
-	misc = {
-		force_default_wallpaper = -1,
-		disable_hyprland_logo = false,
-	},
-})
-
----------------
----- INPUT ----
----------------
-
-hl.config({
-	input = {
-		kb_layout = "us",
-		kb_variant = "",
-		kb_model = "",
-		kb_options = "caps:escape",
-		kb_rules = "",
-
-		follow_mouse = 1,
-
-		sensitivity = 0,
-
-		touchpad = {
-			natural_scroll = false,
-		},
-	},
-})
-
-hl.gesture({
-	fingers = 3,
-	direction = "horizontal",
-	action = "workspace",
-})
-
--- Device config
-hl.device({
-	name = "epic-mouse-v1",
-	sensitivity = -0.5,
-})
-
--- XWayland scaling
-hl.config({
-	xwayland = {
-		force_zero_scaling = true,
-	},
-})
-
----------------------
----- KEYBINDINGS ----
----------------------
-
-require("keybindings")
-
---------------------------------
----- WINDOWS AND WORKSPACES ----
---------------------------------
-
-require("window_rules")
-
--- Static compositor colors for Phantom
-require("phantom-colors")
+-- User configs
+if maybe_create(home .. "/.config/caelestia/hypr-user.lua") then
+	require("hypr-user")
+end

@@ -1,0 +1,24 @@
+{
+    "bar": {
+        "persistent": true,
+        "showOnHover": true,
+        "workspaces": {
+            "showWindows": true
+        }
+    },
+    "general": {
+        "apps": {
+            "terminal": [
+                "ghostty",
+                "--gtk-single-instance=true"
+            ]
+        }
+    },
+    "services": {
+        "clockFormat": "TwelveHour",
+        "weatherUnits": "Celsius"
+    },
+    "paths": {
+        "wallpaperDir": "~/Pictures/wallpapers"
+    }
+}

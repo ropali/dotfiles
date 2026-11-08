@@ -10,7 +10,21 @@ onboarding = false
 # Built-in themes: catppuccin, terminal, tokyo-night, dracula, nord,
 #                  gruvbox, one-dark, solarized, kanagawa, rose-pine,
 #                  vesper
-name = "gruvbox"
+name = "terminal"
+
+# Contrast fixes for the Caelestia dark palette (terminal theme maps tab
+# labels/surfaces to light ANSI colors otherwise)
+[theme.custom]
+panel_bg   = "#131317"
+sidebar_bg = "#1b1b1f"
+surface0   = "#1f1f23"
+surface1   = "#292a2e"
+surface_dim = "#1b1b1f"
+overlay0   = "#45464f"
+overlay1   = "#8f909a"
+text       = "#e4e1e7"
+subtext0   = "#c6c5d1"
+accent     = "#b7c4ff"
 
 # Follow host terminal light/dark appearance and switch Herdr UI themes.
 # Existing manual behavior is unchanged unless this is true.
