@@ -22,5 +22,10 @@ hl.config({
 
     debug = {
         error_position = 1
+    },
+
+    -- Keep XWayland apps at native 1x so fractional scaling doesn't blur them
+    xwayland = {
+        force_zero_scaling = true,
     }
 })

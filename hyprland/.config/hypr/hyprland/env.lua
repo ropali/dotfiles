@@ -19,5 +19,8 @@ hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_SESSION_DESKTOP", "Hyprland")
 
+-- Steam is XWayland: render its UI at the monitor scale (crisp, not upscaled)
+hl.env("STEAM_FORCE_DESKTOPUI_SCALING", "1.5")
+
 -- Others
 hl.env("_JAVA_AWT_WM_NONREPARENTING", "1")

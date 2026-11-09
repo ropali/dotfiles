@@ -27,6 +27,10 @@ hl.on("hyprland.start", function()
 
     -- Start shell
     hl.exec_cmd("caelestia shell -d")
+
+    -- User startup apps
+    hl.exec_cmd("[workspace 1 silent] google-chrome-stable --restore-last-session")
+    hl.exec_cmd("[workspace 2 silent] ghostty")
 end)
 
 -- Resizer listeners
