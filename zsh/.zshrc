@@ -71,3 +71,32 @@ fastfetch
 export PATH="$HOME/.local/bin:$PATH"
 
 alias hc="herdr-compose"
+
+# Rename the Herdr tab to the first command run in it
+# (skipped if the tab already has a custom name)
+_herdr_autoname_preexec() {
+  [[ -n ${HERDR_TAB_ID:-} && -z ${_herdr_tab_named:-} ]] || return 0
+
+  local -a words=(${(z)1}) word
+  local cmd
+  for word in $words; do
+    # skip leading VAR=value assignments
+    [[ $word =~ '^[A-Za-z_][A-Za-z0-9_]*=' ]] && continue
+    cmd=$word
+    break
+  done
+  [[ -n $cmd ]] || return 0
+  _herdr_tab_named=1
+  cmd=${cmd:t}
+
+  local info label num
+  info=$(herdr tab get "$HERDR_TAB_ID" 2>/dev/null) || return 0
+  label=$(print -r -- "$info" | jq -r '.result.tab.label // empty' 2>/dev/null)
+  num=$(print -r -- "$info" | jq -r '.result.tab.number // empty' 2>/dev/null)
+  [[ -n $num && $label == $num ]] || return 0
+
+  herdr tab rename "$HERDR_TAB_ID" "$cmd" >/dev/null 2>&1
+}
+
+autoload -Uz add-zsh-hook
+add-zsh-hook preexec _herdr_autoname_preexec

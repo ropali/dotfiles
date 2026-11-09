@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "theme": "gruvbox",
+  "theme": "caelestia",
   "plugin": ["opencode-antigravity-auth@latest"],
   "provider": {
     "ollama": {
