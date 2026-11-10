@@ -76,7 +76,7 @@ require("hyprland.group")
 require("hyprland.execs")
 require("hyprland.rules")
 require("hyprland.gestures")
-require("hyprland.keybinds")
+require("keybindings")
 
 -- User configs
 if maybe_create(home .. "/.config/caelestia/hypr-user.lua") then
