@@ -103,7 +103,7 @@ wallpaper_scheme = "m3-tonal-spot"
 
 [widget.clock]
 color = "secondary"
-format = "{:%H:%M %A %m/%d/%y}"
+format = "{:%-I:%M %p, %d %b}"
 
 [widget.launcher]
 color = "secondary"
