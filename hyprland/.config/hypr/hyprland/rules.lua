@@ -126,6 +126,27 @@ tagged_rule(game_tag, {
     "gamescope",         -- Gamescope
 }, "class")
 
+-- Native Steam games (e.g. ShadowOfTheTombRaider) use their own class instead
+-- of steam_app_<id>. Detect them from the Steam env vars of their process.
+hl.on("window.open", function(w)
+    if not w.pid or w.pid <= 0 then
+        return
+    end
+
+    local file = io.open("/proc/" .. w.pid .. "/environ", "rb")
+    if not file then
+        return
+    end
+
+    local env = file:read("*a") or ""
+    file:close()
+
+    local gameId = env:match("SteamGameId=([^%z]+)")
+    if gameId and gameId ~= "0" then
+        hl.dispatch(hl.dsp.window.tag({ tag = "+" .. game_tag, address = w.address }))
+    end
+end)
+
 
 -- Xwayland popups
 tagged_rule(xwl_popup_tag, {
