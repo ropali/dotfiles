@@ -101,6 +101,9 @@ wallpaper_scheme = "m3-tonal-spot"
     output_path = "$XDG_CACHE_HOME/noctalia/opencode-palette.json"
     post_hook = "python3 $HOME/dotfiles/scripts/gen-opencode-theme.py ${XDG_CACHE_HOME:-$HOME/.cache}/noctalia/opencode-palette.json ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/themes/matugen.json"
 
+[widget.active_window]
+enabled = false
+
 [widget.clock]
 color = "secondary"
 format = "{:%-I:%M %p, %d %b}"
