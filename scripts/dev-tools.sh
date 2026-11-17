@@ -1,7 +1,14 @@
 #!/bin/bash
 
 # General development tools setup script
-# This script installs development tools that are not distro-specific
+# This script installs development tools that are not distro-specific.
+# Shell integration: fish + zsh come from the stowed dotfiles, bash is kept in
+# sync through scripts/lib/shell-env.sh.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=lib/shell-env.sh
+. "$SCRIPT_DIR/lib/shell-env.sh"
 
 # Colors for better visual separation
 RED='\033[0;31m'
@@ -62,10 +69,34 @@ print_divider() {
 
 stow_config() {
   print_section "📁 Dotfiles Configuration"
-  print_item "Stowing dotfiles config..."
-  cd ~/dotfiles
-  stow nvim tmux zsh systemd
-  print_success "Dotfiles stowed successfully"
+
+  if ! command -v stow >/dev/null 2>&1; then
+    print_warning "stow not found. Install it with: sudo pacman -S stow"
+    return 0
+  fi
+
+  local -a packages=(nvim tmux systemd fish starship fastfetch ghostty)
+
+  # zsh is handled by zsh.sh, which backs up a pre-existing ~/.zshrc first.
+  if [ -L "$HOME/.zshrc" ]; then
+    packages+=(zsh)
+  fi
+
+  local pkg
+  for pkg in "${packages[@]}"; do
+    [ -d "$DOTFILES_DIR/$pkg" ] || continue
+    if stow --dir "$DOTFILES_DIR" --target "$HOME" --restow "$pkg"; then
+      print_success "Stowed $pkg"
+    else
+      print_warning "Could not stow $pkg (conflicting files); resolve manually, then re-run"
+    fi
+  done
+
+  if [ ! -L "$HOME/.zshrc" ]; then
+    print_warning "~/.zshrc is not stowed yet; run scripts/zsh.sh to install the zsh config"
+  fi
+
+  print_success "Dotfiles stowing complete"
 }
 
 ###############################################################################
@@ -85,13 +116,26 @@ install_arch_extras() {
 
 install_uv() {
   print_section "🐍 Python Tools (uv)"
-  print_item "Installing uv package manager..."
-  curl -LsSf https://astral.sh/uv/install.sh | sh
 
-  print_success "uv installed"
+  if command -v uv >/dev/null 2>&1; then
+    print_warning "uv is already installed."
+  else
+    print_item "Installing uv package manager..."
+    # UV_NO_MODIFY_PATH keeps the installer from editing shell rc files; the
+    # dotfiles (fish/zsh) and install_bash_env() below handle integration.
+    curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh
+    print_success "uv installed"
+  fi
 
-  # Source the uv environment to make it available in the current shell
+  # Make it available in the current shell
   export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+
+  install_bash_env uv "$(cat <<'EOF'
+# uv
+[ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
+case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac
+EOF
+)"
 
   print_item "Installing Ruff Python Linter..."
   uv tool install ruff@latest
@@ -147,32 +191,111 @@ clone_repos() {
 
 install_rust() {
   print_section "🦀 Rust Programming Language"
-  print_item "Installing Rust..."
-  if command -v rustc >/dev/null 2>&1; then
+
+  if [ -x "$HOME/.cargo/bin/rustc" ] || command -v rustc >/dev/null 2>&1; then
     print_warning "Rust is already installed. Skipping."
   else
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    print_item "Installing Rust..."
+    # --no-modify-path: the dotfiles and install_bash_env() own shell setup.
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
     print_success "Rust installed"
+  fi
+
+  export PATH="$HOME/.cargo/bin:$PATH"
+  install_bash_env rust "$(cat <<'EOF'
+# Rust
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+case ":$PATH:" in *":$HOME/.cargo/bin:"*) ;; *) export PATH="$HOME/.cargo/bin:$PATH" ;; esac
+EOF
+)"
+  print_success "Rust wired for bash (fish/zsh come from the dotfiles)"
+}
+
+install_nvm_posix() {
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+
+  if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+    print_item "Installing nvm for bash/zsh into $NVM_DIR..."
+    # PROFILE=/dev/null stops the installer from editing rc files; the marked
+    # block below is the only thing that touches ~/.bashrc.
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | PROFILE=/dev/null bash
+  else
+    print_warning "nvm for bash/zsh already present in $NVM_DIR. Reusing."
+  fi
+
+  if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+    print_error "nvm (bash/zsh) installation failed"
+    return 1
+  fi
+
+  # shellcheck disable=SC1091
+  . "$NVM_DIR/nvm.sh"
+
+  print_item "Installing Node.js v24 (bash/zsh)..."
+  if ! nvm install 24 || ! nvm alias default 24 >/dev/null; then
+    print_error "Node.js installation failed (bash/zsh)"
+    return 1
+  fi
+  print_success "Node.js $(node -v) installed for bash/zsh"
+
+  install_bash_env nvm "$(cat <<EOF
+# Node.js via nvm
+export NVM_DIR="\${NVM_DIR:-$NVM_DIR}"
+[ -s "\$NVM_DIR/nvm.sh" ] && \\. "\$NVM_DIR/nvm.sh"
+[ -s "\$NVM_DIR/bash_completion" ] && \\. "\$NVM_DIR/bash_completion"
+EOF
+)"
+}
+
+install_nvm_fish() {
+  if ! command -v fish >/dev/null 2>&1; then
+    print_warning "fish is not installed; skipping fish nvm setup."
+    return 0
+  fi
+
+  local fish_dir="${XDG_CONFIG_HOME:-$HOME/.config}/fish"
+  local base="https://raw.githubusercontent.com/jorgebucaran/nvm.fish/main"
+  local f
+
+  print_item "Installing nvm.fish (fish-native NVM)..."
+  mkdir -p "$fish_dir/functions" "$fish_dir/conf.d" "$fish_dir/completions"
+  for f in \
+    functions/nvm.fish \
+    functions/_nvm_index_update.fish \
+    functions/_nvm_list.fish \
+    functions/_nvm_version_activate.fish \
+    functions/_nvm_version_deactivate.fish \
+    conf.d/nvm.fish \
+    completions/nvm.fish; do
+    curl -fsSL "$base/$f" -o "$fish_dir/$f" || {
+      print_error "Failed to download $f"
+      return 1
+    }
+  done
+
+  touch "$fish_dir/fish_plugins"
+  grep -Fxq 'jorgebucaran/nvm.fish' "$fish_dir/fish_plugins" ||
+    printf 'jorgebucaran/nvm.fish\n' >>"$fish_dir/fish_plugins"
+
+  print_item "Installing Node.js v24 (fish)..."
+  if fish -c 'nvm install 24; and set -U nvm_default_version $nvm_current_version'; then
+    print_success "Node.js $(fish -lic 'node -v' 2>/dev/null) installed for fish"
+  else
+    print_error "fish nvm setup failed"
+    return 1
   fi
 }
 
 install_nvm_nodejs() {
   print_section "⬢ Node.js (via NVM)"
-
-  print_item "Installing NVM..."
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-  print_success "NVM installed"
-
-  # in lieu of restarting the shell
-  \. "$HOME/.nvm/nvm.sh"
-
-  print_item "Installing Node.js v24..."
-  nvm install 24
-  print_success "Node.js installed"
+  install_nvm_posix
+  install_nvm_fish
 
   print_item "Verifying installations..."
-  node -v
-  npm -v
+  bash -c ". \"$NVM_DIR/nvm.sh\" && node -v && npm -v" 2>/dev/null ||
+    print_warning "bash: node/npm verification failed"
+  fish -lic 'node -v; npm -v' 2>/dev/null ||
+    print_warning "fish: restart the shell (or run 'exec fish') to pick up node"
   print_success "Node.js and npm verified"
 }
 
@@ -199,7 +322,7 @@ install_flatpaks() {
 run_other_setups() {
   print_section "🔧 Additional Setup Scripts"
 
-  local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local script_dir="$SCRIPT_DIR"
 
   print_item "Running nerdfonts setup..."
   if [ -f "$script_dir/nerdfonts.sh" ]; then

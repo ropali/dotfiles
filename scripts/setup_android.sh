@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/shell-env.sh
+. "$SCRIPT_DIR/lib/shell-env.sh"
+
 # Android Development Setup for Arch-based systems (CachyOS)
 # Installs Android Studio, the SDK (cmdline-tools, build-tools, emulator),
 # completes the SDK (platform-tools + a platform, licenses), and installs
@@ -164,6 +168,32 @@ if grep -q '^# --- Android SDK ---' "$HOME/.zshrc" 2>/dev/null; then
   echo "WARNING: ~/.zshrc still contains the old Android SDK block pointing at"
   echo "         ~/Android/Sdk. The packages now set ANDROID_HOME=/opt/android-sdk"
   echo "         via /etc/profile.d, so remove that old block to avoid conflicts."
+fi
+
+# --- Shell integration ------------------------------------------------------
+# fish (conf.d/android.fish) and zsh (~/.zshrc) read the SDK location from the
+# stowed dotfiles; keep bash in sync with a marked block.
+install_bash_env android "$(cat <<'EOF'
+# Android SDK + Flutter
+export ANDROID_HOME="${ANDROID_HOME:-/opt/android-sdk}"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+for _dir in "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/emulator" "$ANDROID_HOME/platform-tools"; do
+  if [ -d "$_dir" ]; then
+    case ":$PATH:" in
+    *":$_dir:"*) ;;
+    *) PATH="$_dir:$PATH" ;;
+    esac
+  fi
+done
+unset _dir
+export PATH
+EOF
+)"
+
+if [ -f "$HOME/.config/fish/config.fish" ] &&
+  [ ! -e "$HOME/.config/fish/conf.d/android.fish" ]; then
+  echo "WARNING: fish config is not stowed; run 'cd ~/dotfiles && stow fish'"
+  echo "         so ANDROID_HOME and the SDK tools reach fish."
 fi
 
 # --- Verify -----------------------------------------------------------------

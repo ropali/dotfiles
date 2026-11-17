@@ -1,71 +1,68 @@
-# Lines configured by zsh-newuser-install
-HISTFILE=~/.histfile
-HISTSIZE=1000
-SAVEHIST=1000
-# End of lines configured by zsh-newuser-install
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# ~/.zshrc — managed by the dotfiles repo (stow).
+# Tool integration is guarded so the file works on a fresh machine as well.
 
+# CachyOS defaults: completion, aliases, prompt helpers
+[[ -r /usr/share/cachyos-zsh-config/cachyos-config.zsh ]] &&
+  source /usr/share/cachyos-zsh-config/cachyos-config.zsh
 
-export NVM_DIR="$HOME/.nvm"
-  [ -s "/home/linuxbrew/.linuxbrew/opt/nvm/nvm.sh" ] && \. "/home/linuxbrew/.linuxbrew/opt/nvm/nvm.sh"  # This loads nvm
-  [ -s "/home/linuxbrew/.linuxbrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/home/linuxbrew/.linuxbrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+# Keep PATH entries unique and put user-local tools first
+typeset -U path PATH
 
+# --- User-local paths -------------------------------------------------------
+[[ -d "$HOME/.local/bin" ]] && path=("$HOME/.local/bin" $path)
+[[ -d "$HOME/bin" ]] && path=("$HOME/bin" $path)
+[[ -d "$HOME/.opencode/bin" ]] && path=("$HOME/.opencode/bin" $path)
+[[ -d "$HOME/.lmstudio/bin" ]] && path+=("$HOME/.lmstudio/bin")
+[[ -d "$HOME/.npm-global/bin" ]] && path=("$HOME/.npm-global/bin" $path)
 
-# Alias
+if (( $+commands[go] )); then
+  path+=("$(go env GOPATH)/bin")
+fi
+
+# --- Tool environments ------------------------------------------------------
+# uv
+[[ -f "$HOME/.local/bin/env" ]] && source "$HOME/.local/bin/env"
+
+# Rust
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
+# Node.js via nvm (installed by scripts/dev-tools.sh)
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+[[ -s "$NVM_DIR/nvm.sh" ]] || NVM_DIR="$HOME/.config/nvm"   # legacy location
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+[[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
+
+# Android SDK + Flutter (installed by scripts/setup_android.sh / flutter.sh)
+export ANDROID_HOME="${ANDROID_HOME:-/opt/android-sdk}"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+for _dir in \
+  "$ANDROID_HOME/cmdline-tools/latest/bin" \
+  "$ANDROID_HOME/emulator" \
+  "$ANDROID_HOME/platform-tools" \
+  "$HOME/flutter/bin"; do
+  [[ -d "$_dir" ]] && path=("$_dir" $path)
+done
+unset _dir
+
+# zsh-autosuggestions (installed by scripts/zsh.sh)
+[[ -f "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] &&
+  source "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
+
+# Starship prompt (installed by scripts/starship.sh)
+if (( $+commands[starship] )); then
+  eval "$(starship init zsh)"
+fi
+
+# Locale (also fixes tmux rendering issues on CachyOS)
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-en_US.UTF-8}"
+
+# Aliases
 alias sz="source ~/.zshrc"
-
-# Android, Flutter setup
-export PATH="/opt/flutter/bin:$PATH"
-
-export PATH="/opt/cmdline-tools/bin:$PATH"
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/home/ropali/.lmstudio/bin"
-# End of LM Studio CLI section
-
-# Cargo (Arch package may not create ~/.cargo/env)
-export PATH="$HOME/.cargo/bin:$PATH"
-[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
-
-export PATH=${PATH}:`go env GOPATH`/bin
-
 alias sv="source .venv/bin/activate"
-alias sz="source ~/.zshrc"
-
-source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
-
-eval "$(starship init zsh)"
-
-export PATH="$HOME/flutter/bin:$PATH"
-
-# Android SDK
-export ANDROID_HOME=$HOME/Android/Sdk
-export PATH=$PATH:$ANDROID_HOME/emulator
-export PATH=$PATH:$ANDROID_HOME/platform-tools
-export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
-export PATH=$PATH:$ANDROID_HOME/build-tools/36.1.0/
-
-export PATH="$HOME/.npm-global/bin:$PATH"
-
-# opencode
-export PATH="$HOME/.opencode/bin:$PATH"
-
-source "$HOME/.local/bin/env"
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-export PATH=~/bin:$PATH
-
-# To fix tmux render issue on cachyos
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
-
-
-fastfetch
-
-
-# Added by Antigravity CLI installer
-export PATH="$HOME/.local/bin:$PATH"
-
 alias hc="herdr-compose"
+
+# Fastfetch on interactive shells only
+if [[ -o interactive ]] && (( $+commands[fastfetch] )); then
+  fastfetch
+fi

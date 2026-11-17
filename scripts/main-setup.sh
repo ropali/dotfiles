@@ -65,7 +65,7 @@ run_arch_setup() {
 run_dev_tools_setup() {
     print_subheader "Development Tools Setup"
     if [ -f "$SCRIPT_DIR/dev-tools.sh" ]; then
-        bash "$SCRIPT_DIR/dev-tools.sh"
+        bash "$SCRIPT_DIR/dev-tools.sh" "$@"
         print_success "Development tools setup completed"
     else
         print_warning "dev-tools.sh not found. Skipping development tools setup."
@@ -73,18 +73,42 @@ run_dev_tools_setup() {
 }
 
 # Main function to run all setups
+print_usage() {
+    cat <<'EOF'
+Usage: main-setup.sh [dev-tools options]
+
+Runs the Arch system setup, then forwards any options to dev-tools.sh:
+  --only <list>     Comma-separated components (default: all)
+  --exclude <list>  Comma-separated components to skip
+  -h, --help        Show this help
+
+dev-tools components:
+  stow, extras, flatpaks, uv, ssh, clone, rust, nvm, other_setups
+EOF
+}
+
 main() {
+    if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
+        print_usage
+        exit 0
+    fi
+
     print_header "🚀 DEVELOPMENT ENVIRONMENT SETUP"
 
     run_arch_setup
-    run_dev_tools_setup
+    run_dev_tools_setup "$@"
 
     print_header "✅ SETUP COMPLETE!"
     echo ""
     echo -e "${GREEN}Your development environment has been configured.${NC}"
+    echo -e "${GREEN}Shells: fish and zsh read their configs from ~/dotfiles; bash is kept${NC}"
+    echo -e "${GREEN}in sync through marked blocks in ~/.bashrc.${NC}"
     echo -e "${GREEN}You may need to restart your terminal or log out/in for all changes to take effect.${NC}"
+    echo ""
+    echo -e "${CYAN}Tip: forward component selection to dev-tools, e.g.${NC}"
+    echo -e "${CYAN}     scripts/main-setup.sh --only stow,nvm${NC}"
     echo ""
 }
 
 # Run the main function
-main
+main "$@"

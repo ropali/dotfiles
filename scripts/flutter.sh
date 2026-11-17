@@ -8,6 +8,10 @@ set -euo pipefail
 FLUTTER_DIR="$HOME/flutter"
 RELEASES_URL="https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json"
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/shell-env.sh
+. "$SCRIPT_DIR/lib/shell-env.sh"
+
 # 1. Build/runtime dependencies required by Flutter on Linux
 echo "Installing required packages for Flutter development..."
 sudo pacman -S --needed --noconfirm \
@@ -54,13 +58,19 @@ else
   mv "$TMP_DIR/flutter" "$FLUTTER_DIR"
 fi
 
-# 5. Ensure Flutter is on PATH for zsh. The dotfiles repo already ships this
-# line, so only add it when missing (avoids the duplicates older runs created).
-ZSHRC="$HOME/.zshrc"
-PATH_LINE='export PATH="$HOME/flutter/bin:$PATH"'
-if [ -f "$ZSHRC" ] && ! grep -Fxq "$PATH_LINE" "$ZSHRC"; then
-  echo "Adding Flutter to PATH in $ZSHRC..."
-  printf '\n# Flutter\n%s\n' "$PATH_LINE" >>"$ZSHRC"
+# 5. Register Flutter for every shell.
+#    fish (conf.d/android.fish) and zsh (~/.zshrc) come from the stowed dotfiles;
+#    bash gets a marked block here.
+install_bash_env flutter "$(cat <<'EOF'
+# Flutter
+case ":$PATH:" in *":$HOME/flutter/bin:"*) ;; *) export PATH="$HOME/flutter/bin:$PATH" ;; esac
+EOF
+)"
+
+if [ -f "$HOME/.config/fish/config.fish" ] &&
+  [ ! -e "$HOME/.config/fish/conf.d/android.fish" ]; then
+  echo "WARNING: fish config is not stowed; run 'cd ~/dotfiles && stow fish'"
+  echo "         so ~/flutter/bin is added to fish's PATH too."
 fi
 
 # Make it available for the verification below too (no sourcing of zsh config).

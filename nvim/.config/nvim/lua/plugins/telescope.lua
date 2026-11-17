@@ -1,3 +1,11 @@
+local build_cmd ---@type string?
+for _, cmd in ipairs({ "make", "cmake", "gmake" }) do
+  if vim.fn.executable(cmd) == 1 then
+    build_cmd = cmd
+    break
+  end
+end
+
 return {
   "nvim-telescope/telescope.nvim",
   cmd = "Telescope",

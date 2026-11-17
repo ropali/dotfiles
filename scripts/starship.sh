@@ -1,61 +1,96 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Starship prompt setup for zsh, bash and (optionally) fish.
+#
+#   scripts/starship.sh           # zsh + bash
+#   scripts/starship.sh --fish    # also enable it in fish
+#   scripts/starship.sh --set-default  # also make zsh the login shell
 
-# Stow the config from the dotfiles repo
-cd ~/dotfiles
-stow starship
+set -euo pipefail
 
-# 1. Install Zsh and Starship Binary
-echo "--- Installing Zsh and Starship ---"
-# Arch uses pacman; we ensure zsh is installed first
-sudo pacman -S --needed --noconfirm zsh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=lib/shell-env.sh
+. "$SCRIPT_DIR/lib/shell-env.sh"
 
-# Install Starship via the official cross-shell script
-curl -sS https://starship.rs/install.sh | sh
+INSTALL_FISH=0
+SET_DEFAULT=0
+for arg in "$@"; do
+  case "$arg" in
+  --fish)
+    INSTALL_FISH=1
+    ;;
+  --set-default)
+    SET_DEFAULT=1
+    ;;
+  -h | --help)
+    echo "Usage: starship.sh [--fish] [--set-default]"
+    exit 0
+    ;;
+  *)
+    echo "Unknown option: $arg" >&2
+    exit 1
+    ;;
+  esac
+done
+[ "${INSTALL_STARSHIP_FISH:-0}" = "1" ] && INSTALL_FISH=1
+[ "${SET_DEFAULT_SHELL:-0}" = "1" ] && SET_DEFAULT=1
 
-# 2. Set Zsh as Default Shell
-# This will prompt for your password once
-if [ "$SHELL" != "$(which zsh)" ]; then
-  echo "--- Setting Zsh as your default shell ---"
-  chsh -s $(which zsh)
-fi
+echo "--- Stowing starship config ---"
+(cd "$DOTFILES_DIR" && stow --restow starship)
+echo "--> ~/.config/starship.toml -> $(readlink -f "$HOME/.config/starship.toml")"
 
-# 3. Create Starship Config Directory
-CONFIG_DIR="$HOME/.config"
-mkdir -p "$CONFIG_DIR"
-
-# 4. Create a basic starship.toml (if it doesn't exist)
-if [ ! -f "$CONFIG_DIR/starship.toml" ]; then
-  echo "--- Creating starship.toml config ---"
-  cat <<EOF >"$CONFIG_DIR/starship.toml"
-add_newline = true
-
-[character]
-success_symbol = '[➜](bold green)'
-error_symbol = '[➜](bold red)'
-
-# Custom for your Go development
-[golang]
-symbol = " "
-format = 'via [$symbol($version )]($style)'
-EOF
-fi
-
-# 5. Add Starship to .zshrc (Idempotent check)
-ZSHRC="$HOME/.zshrc"
-INIT_LINE='eval "$(starship init zsh)"'
-
-# Create .zshrc if it doesn't exist
-touch "$ZSHRC"
-
-if ! grep -Fxq "$INIT_LINE" "$ZSHRC"; then
-  echo "--- Adding Starship to .zshrc ---"
-  echo "" >>"$ZSHRC"
-  echo "# Starship Prompt" >>"$ZSHRC"
-  echo "$INIT_LINE" >>"$ZSHRC"
+echo "--- Installing starship ---"
+if command -v starship >/dev/null 2>&1; then
+  echo "--> starship is already installed: $(starship --version | head -n1)"
 else
-  echo "--> Starship init already present in .zshrc. Skipping..."
+  curl -sS https://starship.rs/install.sh | sh -s -- -y
 fi
 
-echo "--- Setup Complete! ---"
-echo "Please log out and log back in (or restart) for the shell change to take effect."
-echo "Then, open your terminal and enjoy Zsh + Starship!"
+echo "--- Registering starship in bash ---"
+install_bash_env starship "$(cat <<'EOF'
+# Starship prompt
+if command -v starship >/dev/null 2>&1; then
+  eval "$(starship init bash)"
+fi
+EOF
+)"
+
+echo "--- Registering starship in zsh ---"
+# zsh uses the stowed ~/.zshrc, which already contains the guarded init line.
+
+if [ "$INSTALL_FISH" -eq 1 ]; then
+  echo "--- Registering starship in fish ---"
+  install_fish_conf starship "$(cat <<'EOF'
+if type -q starship
+    starship init fish | source
+end
+EOF
+)"
+else
+  echo "--> fish keeps its current prompt (CachyOS Pure)."
+  echo "    Enable Starship in fish with: scripts/starship.sh --fish"
+fi
+
+if [ "$SET_DEFAULT" -eq 1 ]; then
+  if command -v zsh >/dev/null 2>&1; then
+    ZSH_PATH="$(command -v zsh)"
+    CURRENT_SHELL="$(getent passwd "$USER" | cut -d: -f7)"
+    if [ "$CURRENT_SHELL" != "$ZSH_PATH" ]; then
+      echo "--- Setting zsh as your login shell ---"
+      chsh -s "$ZSH_PATH"
+    fi
+  else
+    echo "WARNING: zsh not installed; run scripts/zsh.sh first."
+  fi
+fi
+
+echo ""
+echo "Starship setup complete."
+echo "  zsh : configured via ~/.zshrc"
+echo "  bash: configured via ~/.bashrc"
+if [ "$INSTALL_FISH" -eq 1 ]; then
+  echo "  fish: configured via ~/.config/fish/conf.d/starship.fish"
+else
+  echo "  fish: untouched (use --fish to enable)"
+fi
+echo "Open a new shell to see the prompt."

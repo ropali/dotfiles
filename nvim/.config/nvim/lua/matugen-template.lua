@@ -21,6 +21,10 @@ function M.setup()
     base0D = "{{colors.primary_fixed_dim.default.hex}}", -- Functions, Methods
     base0E = "{{colors.secondary_fixed_dim.default.hex}}", -- Keywords, Storage
     base0F = "{{colors.error_container.default.hex}}", -- Deprecated, Embedded Tags
+  }, {
+    -- base16 defaults Telescope to "borderless" (border fg == bg, so the
+    -- picker outline is invisible). Keep real borders.
+    telescope_borders = true,
   })
 end
 

@@ -17,7 +17,7 @@ install_packages() {
   echo "Installing required packages from Arch repositories..."
   sudo pacman -Syu --needed --noconfirm \
     base-devel git curl wget unzip fontconfig xz \
-    tmux neovim zsh gnome-tweaks go gtk3 \
+    tmux neovim zsh fish gnome-tweaks go gtk3 \
     upx sshpass stow fd vlc ghostty \
     hyprpolkitagent
 }

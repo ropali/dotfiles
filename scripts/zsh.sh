@@ -1,60 +1,75 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Zsh setup: installs zsh, stows the dotfiles' zsh config and installs
+# zsh-autosuggestions.
+#
+# Making zsh the login shell is opt-in:
+#   scripts/zsh.sh --set-default
+#   SET_DEFAULT_SHELL=1 scripts/zsh.sh
 
-# Stow the config from the dotfiles repo
-cd ~/dotfiles
-stow starship
+set -euo pipefail
 
-# We'll store plugins in a standard location
-PLUGIN_DIR="$HOME/.zsh/plugins"
-mkdir -p "$PLUGIN_DIR"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# 1. Install Zsh using pacman
-echo "--- Checking for Zsh installation ---"
-if ! command -v zsh &>/dev/null; then
-  echo "Installing Zsh..."
+SET_DEFAULT=0
+for arg in "$@"; do
+  case "$arg" in
+  --set-default)
+    SET_DEFAULT=1
+    ;;
+  -h | --help)
+    echo "Usage: zsh.sh [--set-default]"
+    exit 0
+    ;;
+  *)
+    echo "Unknown option: $arg" >&2
+    exit 1
+    ;;
+  esac
+done
+[ "${SET_DEFAULT_SHELL:-0}" = "1" ] && SET_DEFAULT=1
+
+echo "--- Installing zsh ---"
+if ! command -v zsh >/dev/null 2>&1; then
   sudo pacman -S --needed --noconfirm zsh
 else
-  echo "--> Zsh is already installed. Skipping..."
+  echo "--> zsh is already installed."
 fi
 
-# 2. Set Zsh as the default shell
-# This uses the 'chsh' command to change the login shell for the current user
-CURRENT_SHELL=$(getent passwd "$USER" | cut -d: -f7)
-ZSH_PATH=$(which zsh)
-
-if [ "$CURRENT_SHELL" != "$ZSH_PATH" ]; then
-  echo "--- Setting Zsh as your default shell ---"
-  echo "Note: You might be prompted for your password."
-  chsh -s "$ZSH_PATH"
-else
-  echo "--> Zsh is already your default shell."
+echo "--- Stowing zsh config ---"
+if [ -e "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
+  BACKUP="$HOME/.zshrc.pre-dotfiles.$(date +%Y%m%d%H%M%S)"
+  echo "--> Backing up existing ~/.zshrc to $BACKUP"
+  mv "$HOME/.zshrc" "$BACKUP"
 fi
+(cd "$DOTFILES_DIR" && stow --restow zsh)
+echo "--> ~/.zshrc -> $(readlink -f "$HOME/.zshrc")"
 
-# 3. Initialize the .zshrc file
-# Zsh often prompts for a 'New User' setup on first run.
-# Creating a blank .zshrc prevents that annoying menu.
-ZSHRC="$HOME/.zshrc"
-if [ ! -f "$ZSHRC" ]; then
-  echo "--- Creating initial .zshrc ---"
-  touch "$ZSHRC"
-  # Basic default settings for a better experience
-  cat <<EOF >>"$ZSHRC"
-# Basic Zsh Config
-export LANG=en_US.UTF-8
-autoload -Uz compinit && compinit
-zstyle ':completion:*' menu select
-EOF
-else
-  echo "--> .zshrc already exists."
-fi
-
-# 4. Install zsh-autosuggestions
-echo "--- Setting up zsh-autosuggestions ---"
+echo "--- Installing zsh-autosuggestions ---"
+PLUGIN_DIR="$HOME/.zsh"
 if [ ! -d "$PLUGIN_DIR/zsh-autosuggestions" ]; then
-  git clone https://github.com/zsh-users/zsh-autosuggestions "$PLUGIN_DIR/zsh-autosuggestions"
+  mkdir -p "$PLUGIN_DIR"
+  git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions \
+    "$PLUGIN_DIR/zsh-autosuggestions"
 else
-  echo "--> zsh-autosuggestions already installed. Skipping..."
+  echo "--> zsh-autosuggestions already installed."
 fi
 
-echo "--- Zsh Installation Complete! ---"
-echo "IMPORTANT: Please LOG OUT and LOG BACK IN for the shell change to take effect."
+if [ "$SET_DEFAULT" -eq 1 ]; then
+  ZSH_PATH="$(command -v zsh)"
+  CURRENT_SHELL="$(getent passwd "$USER" | cut -d: -f7)"
+  if [ "$CURRENT_SHELL" != "$ZSH_PATH" ]; then
+    echo "--- Setting zsh as your login shell ---"
+    chsh -s "$ZSH_PATH"
+  else
+    echo "--> zsh is already your login shell."
+  fi
+else
+  echo "--> Leaving your login shell unchanged."
+  echo "    To make zsh the default: scripts/zsh.sh --set-default"
+fi
+
+echo ""
+echo "Zsh setup complete. Start it with: zsh"
+echo "Note: the fish and bash environments are configured by their own files;"
+echo "      zsh reads everything it needs from ~/.zshrc."
