@@ -89,7 +89,7 @@ wallpaper_scheme = "m3-tonal-spot"
     [theme.templates]
     builtin_ids = [ "btop", "gtk3", "gtk4", "kcolorscheme", "kitty", "qt", "alacritty" ]
     enable_community_templates = true
-    community_ids = [ "herdr" ]
+    community_ids = [ "herdr", "obsidian" ]
 
     [theme.templates.user.nvim-base16]
     input_path = "$XDG_CONFIG_HOME/nvim/lua/matugen-template.lua"

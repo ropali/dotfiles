@@ -18,7 +18,7 @@ install_packages() {
   sudo pacman -Syu --needed --noconfirm \
     base-devel git curl wget unzip fontconfig xz \
     tmux neovim zsh fish gnome-tweaks go gtk3 \
-    upx sshpass stow fd vlc ghostty \
+    upx sshpass stow fd vlc ghostty go-yq \
     hyprpolkitagent
 }
 
