@@ -3,3 +3,6 @@ nvim/.config/nvim/lua/matugen.lua
 
 # Literal $HOME paths accidentally created by unexpanded Noctalia hooks
 $HOME/
+
+# herdr-compose runtime state
+herdr-compose/layouts/.active

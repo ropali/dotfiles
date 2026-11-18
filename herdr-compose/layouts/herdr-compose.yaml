@@ -1,0 +1,18 @@
+# Multi-workspace, multi-tab layout example
+
+workspaces:
+  - name: crabbase 
+    root: ~/Workspace/crabbase/
+    focus: true
+    tabs:
+      - label: editor
+        panes:
+          - name: editor
+            command: ide --ai opencode .
+            focus: true
+
+      - label: fe-watcher
+        panes:
+            - name: fe-watcher
+              cwd: ~/Workspace/crabbase/
+              command: make watch-fe
