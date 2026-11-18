@@ -57,6 +57,11 @@ herdr-compose apply <file> -v           # log every herdr call
 herdr-compose show [file]               # print the workspace/tab/pane tree
 herdr-compose validate [file]           # validate syntax + schema
 
+herdr-compose start [file]             # cold start: fresh server + layout + attach
+herdr-compose start --no-attach        # prepare the layout at login
+herdr-compose start --fresh            # close existing workspaces, then re-apply
+herdr-compose start --if-needed        # no-op when the server already runs
+
 herdr-compose use <name>                # set active default (copies it here if needed)
 herdr-compose list                     # saved layouts + active marker
 herdr-compose save <file> [--use]       # copy a layout into layouts/
@@ -109,6 +114,29 @@ workspaces:
 
 Shorthand `panes:` directly on a workspace creates a single tab named after the
 workspace, exactly like the Python version.
+
+## Startup and session restore
+
+Herdr restores the previous layout from `~/.config/herdr/session.json` whenever
+the server starts. `herdr-compose start` avoids that stale layout:
+
+- **Server stopped (cold start):** it archives `session.json` to
+  `session.json.bak-<timestamp>`, starts the headless server, applies the
+  layout and attaches.
+- **Server running:** it just applies the layout. Add `--fresh` to close the
+  existing workspaces first (this ends their processes).
+- `--no-attach` prepares everything without attaching (login autostart).
+- `--if-needed` does nothing when the server is already running, so restarting
+  Hyprland without logging out does not duplicate the layout.
+
+This repo autostarts it in `hyprland/config/autostart.lua`:
+
+```lua
+hl.exec_cmd("herdr-compose start --no-attach --if-needed")
+```
+
+With that, a fresh login leaves the layout ready; `herdr` (or `hc`) just
+attaches to it.
 
 ## Notes
 

@@ -91,6 +91,10 @@ wallpaper_scheme = "m3-tonal-spot"
     enable_community_templates = true
     community_ids = [ "herdr", "obsidian", "zed" ]
 
+    [theme.templates.user.fastfetch]
+    input_path = "$XDG_CONFIG_HOME/noctalia/templates/fastfetch.jsonc"
+    output_path = "$XDG_CONFIG_HOME/fastfetch/config.jsonc"
+
     [theme.templates.user.nvim-base16]
     input_path = "$XDG_CONFIG_HOME/nvim/lua/matugen-template.lua"
     output_path = "$XDG_CONFIG_HOME/nvim/lua/matugen.lua"

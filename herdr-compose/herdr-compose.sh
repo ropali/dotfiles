@@ -59,10 +59,11 @@ Usage:
   herdr-compose                        Apply the active default layout
   herdr-compose <file>                 Apply a specific layout file
   herdr-compose apply [file] [flags]   Apply a layout
+  herdr-compose start [file] [flags]   Start Herdr fresh + apply + attach
   herdr-compose show [file]            Print the workspace/tab/pane tree
   herdr-compose validate [file]        Validate layout syntax and schema
   herdr-compose use <name>             Set the active default layout
-  herdr-compose save <file> [--use]    Copy a layout into ~/.config/herdr-compose
+  herdr-compose save <file> [--use]    Copy a layout into <project>/layouts
   herdr-compose list                   List saved layouts
   herdr-compose remove <name>          Remove a saved layout
   herdr-compose init [name]            Create a starter layout
@@ -71,7 +72,16 @@ Usage:
 apply flags:
   --dry-run        Print the herdr commands instead of running them
   -v, --verbose    Log each herdr command
-  --save           Also save the layout into ~/.config/herdr-compose/
+  --save           Also save the layout into <project>/layouts/
+
+start flags:
+  --fresh          Close existing workspaces first (server already running)
+  --no-attach      Prepare the layout but do not attach (for autostart)
+  --if-needed      Do nothing if the server is already running
+  --dry-run        Print what would happen
+
+On a cold start, `start` archives session.json first, so Herdr does not
+restore the previous session layout.
 
 Environment:
   HERDR_COMPOSE_CONFIG   Layout file to use (same as HERDR_LAYOUT_CONFIG)
@@ -510,6 +520,122 @@ apply_layout_json() {
 }
 
 # ---------------------------------------------------------------------------
+# Server lifecycle (herdr-compose start)
+# ---------------------------------------------------------------------------
+herdr_state_dir() {
+  local base="${XDG_CONFIG_HOME:-$HOME/.config}/herdr"
+  local session="${HERDR_SESSION:-}"
+  if [ -n "$session" ] && [ "$session" != "default" ]; then
+    printf '%s/sessions/%s' "$base" "$session"
+  else
+    printf '%s' "$base"
+  fi
+}
+
+server_running() {
+  herdr status server 2>/dev/null | grep -q '^status: running'
+}
+
+wait_for_server() {
+  local i
+  for ((i = 0; i < 150; i++)); do
+    server_running && return 0
+    sleep 0.1
+  done
+  return 1
+}
+
+archive_session_state() {
+  local dir state backup
+  dir="$(herdr_state_dir)"
+  state="$dir/session.json"
+  [ -f "$state" ] || return 0
+  backup="$state.bak-$(date +%Y%m%d-%H%M%S)"
+  mv "$state" "$backup"
+  printf '  archived previous session state: %s\n' "$backup"
+}
+
+close_all_workspaces() {
+  local ids id
+  ids="$(herdr workspace list 2>/dev/null | jq -r '.result.workspaces[]?.workspace_id' 2>/dev/null || true)"
+  while IFS= read -r id; do
+    [ -n "$id" ] || continue
+    printf '  closing workspace %s\n' "$id"
+    herdr workspace close "$id" >/dev/null 2>&1 || true
+  done <<<"$ids"
+}
+
+cmd_start() {
+  local file="" fresh=0 attach=1 if_needed=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+    --fresh | --reset) fresh=1 ;;
+    --no-attach) attach=0 ;;
+    --attach) attach=1 ;;
+    --if-needed) if_needed=1 ;;
+    --dry-run) DRY_RUN=1 ;;
+    -v | --verbose) VERBOSE=1 ;;
+    -h | --help)
+      usage
+      return 0
+      ;;
+    -*)
+      die "Unknown option: $1"
+      ;;
+    *) file="$1" ;;
+    esac
+    shift
+  done
+
+  local path json
+  path="$(resolve_config_path "$file")"
+  json="$(load_layout "$path")"
+
+  # Inside a Herdr pane, nested attach is blocked by design: just apply.
+  if [ "${HERDR_ENV:-}" = "1" ]; then
+    printf 'Inside Herdr: applying layout from %s...\n' "$path"
+    apply_layout_json "$json"
+    ok "Layout applied."
+    return 0
+  fi
+
+  if server_running; then
+    if [ "$if_needed" = "1" ]; then
+      printf 'Herdr server already running; leaving layout untouched.\n'
+      return 0
+    fi
+    if [ "$fresh" = "1" ]; then
+      if [ "$DRY_RUN" = "1" ]; then
+        printf '[DRY-RUN] close all existing workspaces\n'
+      else
+        printf 'Closing existing workspaces...\n'
+        close_all_workspaces
+      fi
+    fi
+  else
+    if [ "$DRY_RUN" = "1" ]; then
+      printf '[DRY-RUN] archive %s/session.json\n' "$(herdr_state_dir)"
+      printf '[DRY-RUN] herdr server (headless)\n'
+    else
+      # A stopped server restores session.json on start. Archive it so the
+      # layout is built from scratch instead of the previous session.
+      archive_session_state
+      printf 'Starting herdr server...\n'
+      (setsid herdr server </dev/null >/dev/null 2>&1 &)
+      wait_for_server || die "herdr server did not start within 15s"
+    fi
+  fi
+
+  printf 'Applying layout from %s...\n' "$path"
+  apply_layout_json "$json"
+  ok "Layout ready."
+
+  if [ "$attach" = "1" ] && [ "$DRY_RUN" != "1" ]; then
+    exec herdr
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Tree rendering (mirrors utils.render_layout_tree)
 # ---------------------------------------------------------------------------
 render_tree() {
@@ -875,6 +1001,10 @@ main() {
   apply)
     shift
     apply_cli "$@"
+    ;;
+  start)
+    shift
+    cmd_start "$@"
     ;;
   validate)
     shift
