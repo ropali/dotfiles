@@ -2,7 +2,7 @@
 
 TERMINAL     = "kitty"
 FILE_MANAGER = "dolphin"
-BROWSER      = "google-chrome-stable"
+BROWSER      = "com.google.Chrome" -- Flatpak Chrome
 EDITOR       = "gnome-text-editor --new-window"
 CALCULATOR   = "gnome-calculator"
 
